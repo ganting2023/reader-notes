@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#c9974a">
+<meta name="theme-color" content="#f8f6f3">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="阅读拾遗">
@@ -12,582 +12,809 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>📖 阅读拾遗</title>
 <style>
-  :root {
-    --bg: #f5f0e8;
-    --card: #fffaf3;
-    --accent: #c9974a;
-    --accent-light: #e8d5b8;
-    --text: #4a3f35;
-    --text-light: #8b7d6b;
-    --line: #d4c5a9;
-    --shadow: 0 2px 12px rgba(139, 111, 71, 0.12);
-    --font-serif: 'Georgia', 'Songti SC', 'STSong', serif;
-    --font-sans: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  }
+:root {
+  --bg: #f8f6f3;
+  --card: #ffffff;
+  --accent: #a8b5a0;
+  --accent-dark: #8a9e85;
+  --accent-light: #e8ede5;
+  --warm: #e8e0d5;
+  --text: #5a5a5a;
+  --text-light: #a0a0a0;
+  --text-faint: #d0d0d0;
+  --line: #ececec;
+  --shadow: 0 1px 8px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 20px rgba(0,0,0,0.08);
+  --serif: 'Georgia', 'Songti SC', 'STSong', serif;
+  --sans: -apple-system, 'PingFang SC', 'Noto Sans KR', 'Microsoft YaHei', sans-serif;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
 
-  body {
-    font-family: var(--font-sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    background-image:
-      radial-gradient(circle at 20% 80%, rgba(201, 151, 74, 0.06) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(201, 151, 74, 0.04) 0%, transparent 50%);
-  }
+/* ===== 书架页 ===== */
+.page-shelf { display:block; }
+.page-book { display:none; }
 
-  /* ===== 顶部标题区 ===== */
-  header {
-    text-align: center;
-    padding: 48px 20px 32px;
-  }
-  header h1 {
-    font-family: var(--font-serif);
-    font-size: 2.4rem;
-    color: var(--text);
-    font-weight: 700;
-    letter-spacing: 2px;
-  }
-  header h1 span { color: var(--accent); }
-  header p {
-    margin-top: 8px;
-    font-size: 0.95rem;
-    color: var(--text-light);
-    letter-spacing: 1px;
-  }
+/* 顶部 */
+.header-shelf {
+  text-align: center;
+  padding: 56px 20px 16px;
+}
+.header-shelf h1 {
+  font-family: var(--serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 3px;
+}
+.header-shelf .sub {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
 
-  /* ===== 添加按钮 ===== */
-  .add-bar {
-    text-align: center;
-    margin-bottom: 32px;
-  }
-  .btn-add {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 12px 32px;
-    border-radius: 28px;
-    font-size: 1rem;
-    font-family: var(--font-sans);
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(201, 151, 74, 0.35);
-    transition: all 0.3s ease;
-    letter-spacing: 1px;
-  }
-  .btn-add:hover {
-    background: #b88638;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(201, 151, 74, 0.45);
-  }
-  .btn-add:active { transform: translateY(0); }
+/* 添加书按钮 */
+.add-book-bar {
+  text-align: center;
+  padding: 20px;
+}
+.btn-add-book {
+  background: none;
+  border: 1px solid var(--accent-light);
+  color: var(--accent-dark);
+  padding: 10px 28px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+.btn-add-book:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
 
-  /* ===== 卡片网格 ===== */
-  .cards-wrap {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 20px 60px;
-  }
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 24px;
-  }
+/* 书架网格 */
+.shelf-grid {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 20px 80px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 28px 20px;
+}
 
-  /* ===== 单张卡片 ===== */
-  .card {
-    background: var(--card);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
-  }
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 24px rgba(139, 111, 71, 0.18);
-  }
+/* 书的卡片 */
+.book-item {
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.book-item:active { transform: scale(0.96); }
 
-  .card-img-wrap {
-    width: 100%;
-    overflow: hidden;
-    background: var(--accent-light);
-    position: relative;
-  }
-  .card-img-wrap img {
-    width: 100%;
-    display: block;
-    max-height: 500px;
-    object-fit: cover;
-  }
-  .card-img-wrap .img-placeholder {
-    width: 100%;
-    height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    color: var(--accent);
-    background: linear-gradient(135deg, var(--accent-light) 0%, #f0e0cc 100%);
-  }
+/* 书封面 */
+.book-cover {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 4px 8px 8px 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1), inset 4px 0 0 rgba(0,0,0,0.06);
+  position: relative;
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s;
+}
+.book-item:hover .book-cover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.15), inset 4px 0 0 rgba(0,0,0,0.06);
+}
+.book-cover img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.book-cover .cover-placeholder {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  color: var(--accent-dark);
+  padding: 12px 8px;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.5;
+}
 
-  .card-quote {
-    padding: 16px 20px 8px;
-  }
-  .card-quote p {
-    font-family: var(--font-serif);
-    font-size: 1.05rem;
-    line-height: 1.8;
-    color: var(--text);
-    text-align: justify;
-  }
-  .card-quote .quote-mark {
-    font-size: 1.6rem;
-    color: var(--accent);
-    margin-right: 4px;
-    font-family: Georgia, serif;
-  }
+/* 书信息 */
+.book-info {
+  margin-top: 10px;
+}
+.book-title {
+  font-size: 0.82rem;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+.book-author {
+  font-size: 0.72rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+.book-count {
+  font-size: 0.68rem;
+  color: var(--text-faint);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
 
-  /* 感悟横线区 */
-  .card-thoughts {
-    padding: 12px 20px 20px;
-  }
-  .card-thoughts label {
-    font-size: 0.8rem;
-    color: var(--text-light);
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    display: block;
-  }
-  .card-thoughts .lines {
-    background-image: repeating-linear-gradient(
-      transparent,
-      transparent 31px,
-      var(--line) 31px,
-      var(--line) 32px
-    );
-    min-height: 96px;
-    padding: 4px 0;
-  }
-  .card-thoughts .thoughts-text {
-    font-family: var(--font-serif);
-    font-size: 0.95rem;
-    line-height: 32px;
-    color: var(--text);
-    white-space: pre-wrap;
-    word-break: break-word;
-    min-height: 96px;
-  }
+/* 删除书 */
+.book-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  font-size: 0.65rem;
+  color: var(--text-light);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 2;
+}
+.book-item:hover .book-delete { opacity: 1; }
 
-  .card-date {
-    padding: 0 20px 12px;
-    font-size: 0.75rem;
-    color: var(--text-light);
-    text-align: right;
-  }
+/* ===== 单本书页面 ===== */
+.header-book {
+  display: flex;
+  align-items: center;
+  padding: 48px 20px 16px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 1.3rem;
+  padding: 4px 8px;
+}
+.header-book-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--text);
+  letter-spacing: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 38px;
+}
 
-  .card-delete {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.35);
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .card:hover .card-delete { opacity: 1; }
-  .card-delete:hover { background: rgba(220, 80, 80, 0.7); }
+/* 添加笔记按钮 */
+.add-note-bar {
+  text-align: center;
+  padding: 8px 20px 20px;
+}
+.btn-add-note {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+.btn-add-note:hover { background: var(--accent-dark); }
 
-  /* ===== 空状态 ===== */
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-light);
-  }
-  .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-  .empty-state p { font-size: 1rem; }
+/* 笔记时间线 */
+.timeline {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
 
-  /* ===== 弹窗 ===== */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(74, 63, 53, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .modal-overlay.active { display: flex; }
+.timeline-item {
+  margin-bottom: 32px;
+}
 
-  .modal {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 32px;
-    width: 100%;
-    max-width: 520px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
-    animation: modalIn 0.3s ease;
-  }
-  @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
+.timeline-date {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
 
-  .modal h2 {
-    font-family: var(--font-serif);
-    font-size: 1.4rem;
-    color: var(--text);
-    margin-bottom: 20px;
-    text-align: center;
-  }
+.note-card {
+  background: var(--card);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.3s;
+}
+.note-card:hover { box-shadow: var(--shadow-hover); }
 
-  .modal label {
-    display: block;
-    font-size: 0.85rem;
-    color: var(--text-light);
-    margin-bottom: 6px;
-    margin-top: 16px;
-    letter-spacing: 0.5px;
-  }
+.note-img {
+  width: 100%;
+  max-height: 450px;
+  object-fit: cover;
+  display: block;
+}
 
-  .modal textarea,
-  .modal input[type="text"] {
-    width: 100%;
-    border: 1.5px solid var(--accent-light);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: var(--font-sans);
-    font-size: 0.95rem;
-    color: var(--text);
-    background: #fff;
-    resize: vertical;
-    transition: border-color 0.3s;
-  }
-  .modal textarea:focus,
-  .modal input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
+.note-quote {
+  padding: 14px 18px 6px;
+}
+.note-quote p {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+.note-quote .qm {
+  color: var(--accent);
+  font-size: 1.2rem;
+  font-family: Georgia, serif;
+}
 
-  .modal textarea.quote-input {
-    min-height: 80px;
-    font-family: var(--font-serif);
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-  .modal textarea.thoughts-input {
-    min-height: 96px;
-    font-family: var(--font-serif);
-    line-height: 32px;
-    background-image: repeating-linear-gradient(
-      transparent,
-      transparent 31px,
-      var(--line) 31px,
-      var(--line) 32px
-    );
-    background-attachment: local;
-    line-height: 32px;
-  }
+.note-thoughts {
+  padding: 8px 18px 16px;
+}
+.note-thoughts .label {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+.note-thoughts .lines-bg {
+  background-image: repeating-linear-gradient(
+    transparent, transparent 27px,
+    var(--line) 27px, var(--line) 28px
+  );
+  padding: 2px 0;
+  min-height: 56px;
+}
+.note-thoughts .t-text {
+  font-family: var(--serif);
+  font-size: 0.88rem;
+  line-height: 28px;
+  color: var(--text-light);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 
-  /* 图片上传区 */
-  .img-upload-area {
-    border: 2px dashed var(--accent-light);
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.3s, background 0.3s;
-    margin-bottom: 4px;
-  }
-  .img-upload-area:hover {
-    border-color: var(--accent);
-    background: rgba(201, 151, 74, 0.04);
-  }
-  .img-upload-area .upload-icon {
-    font-size: 2rem;
-    color: var(--accent);
-  }
-  .img-upload-area p {
-    font-size: 0.85rem;
-    color: var(--text-light);
-    margin-top: 6px;
-  }
-  .img-preview {
-    max-width: 100%;
-    max-height: 200px;
-    border-radius: 8px;
-    margin-top: 10px;
-    display: none;
-  }
-  .img-preview.show { display: block; }
+.note-delete {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  padding: 4px 18px 12px;
+  display: block;
+  margin-left: auto;
+  letter-spacing: 1px;
+}
+.note-delete:hover { color: #c08080; }
 
-  .modal-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  .btn-save {
-    flex: 1;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    font-family: var(--font-sans);
-    transition: background 0.3s;
-  }
-  .btn-save:hover { background: #b88638; }
-  .btn-cancel {
-    flex: 1;
-    background: transparent;
-    color: var(--text-light);
-    border: 1.5px solid var(--accent-light);
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    font-family: var(--font-sans);
-    transition: all 0.3s;
-  }
-  .btn-cancel:hover {
-    border-color: var(--text-light);
-    color: var(--text);
-  }
+/* 空状态 */
+.empty {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-faint);
+}
+.empty .icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty p { font-size: 0.85rem; letter-spacing: 1px; }
 
-  /* ===== 响应式 ===== */
-  @media (max-width: 480px) {
-    header h1 { font-size: 1.8rem; }
-    .cards-grid { grid-template-columns: 1fr; }
-    .modal { padding: 24px 20px; }
-  }
+/* ===== 弹窗 ===== */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(90,90,90,0.35);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
 
-  /* 打印优化 */
-  @media print {
-    .add-bar, .modal-overlay, .card-delete { display: none !important; }
-    body { background: #fff; }
-    .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
-  }
+.modal {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 88vh;
+  overflow-y: auto;
+  animation: mIn 0.3s ease;
+}
+@keyframes mIn {
+  from { opacity:0; transform: scale(0.96) translateY(8px); }
+  to { opacity:1; transform: scale(1) translateY(0); }
+}
+
+.modal h2 {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 18px;
+  letter-spacing: 2px;
+}
+
+.modal label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin: 14px 0 6px;
+  letter-spacing: 1px;
+}
+
+.modal input[type="text"],
+.modal textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  color: var(--text);
+  background: #fafafa;
+  transition: border-color 0.3s;
+}
+.modal input[type="text"]:focus,
+.modal textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: #fff;
+}
+
+.modal textarea.quote-input {
+  min-height: 70px;
+  font-family: var(--serif);
+  font-size: 0.92rem;
+  line-height: 1.7;
+  resize: vertical;
+}
+.modal textarea.thoughts-input {
+  min-height: 84px;
+  font-family: var(--serif);
+  line-height: 28px;
+  background-image: repeating-linear-gradient(
+    transparent, transparent 27px,
+    var(--line) 27px, var(--line) 28px
+  );
+  background-attachment: local;
+}
+
+/* 颜色选择 */
+.color-pick {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.color-opt {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+.color-opt.selected { border-color: var(--text); }
+
+/* 图片上传 */
+.img-upload {
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s;
+}
+.img-upload:hover {
+  border-color: var(--accent);
+  background: rgba(168,181,160,0.04);
+}
+.img-upload .icon { font-size: 1.6rem; color: var(--accent); }
+.img-upload p { font-size: 0.78rem; color: var(--text-light); margin-top: 4px; }
+.img-preview {
+  max-width: 100%;
+  max-height: 180px;
+  border-radius: 8px;
+  margin-top: 8px;
+  display: none;
+}
+.img-preview.show { display: block; }
+
+.modal-actions {
+  display: flex; gap: 10px; margin-top: 22px;
+}
+.btn-save {
+  flex:1; background: var(--accent); color:#fff;
+  border:none; padding:11px; border-radius:8px;
+  font-size:0.88rem; letter-spacing:1px;
+}
+.btn-save:hover { background: var(--accent-dark); }
+.btn-cancel {
+  flex:1; background:none; color:var(--text-light);
+  border:1px solid var(--line); padding:11px; border-radius:8px;
+  font-size:0.88rem; letter-spacing:1px;
+}
+.btn-cancel:hover { border-color: var(--text-light); color: var(--text); }
+
+/* 响应式 */
+@media (max-width:420px) {
+  .shelf-grid { grid-template-columns: repeat(2,1fr); gap:20px 16px; }
+  .header-shelf h1 { font-size:1.35rem; }
+}
+
+@media print {
+  .add-book-bar,.add-note-bar,.modal-overlay,.note-delete,.btn-back { display:none!important; }
+  body { background:#fff; }
+  .note-card { box-shadow:none; border:1px solid #eee; }
+}
+
+/* 页面切换动画 */
+.page {
+  animation: pageIn 0.3s ease;
+}
+@keyframes pageIn {
+  from { opacity:0; }
+  to { opacity:1; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>📖 阅读<span>拾遗</span></h1>
-  <p>记录那些在字里行间遇见的光 ✨</p>
-</header>
-
-<div class="add-bar">
-  <button class="btn-add" onclick="openModal()">✒️ 添加摘录</button>
-</div>
-
-<div class="cards-wrap">
-  <div id="emptyState" class="empty-state">
-    <div class="icon">📚</div>
-    <p>还没有摘录，点击上方按钮开始记录吧</p>
+<!-- ===== 书架页 ===== -->
+<div class="page page-shelf" id="pageShelf">
+  <div class="header-shelf">
+    <h1>阅读拾遗</h1>
+    <div class="sub">R E A D I N G &nbsp; N O T E S</div>
   </div>
-  <div class="cards-grid" id="cardsGrid"></div>
+  <div class="add-book-bar">
+    <button class="btn-add-book" onclick="openBookModal()">+ 添加书</button>
+  </div>
+  <div id="emptyShelf" class="empty" style="display:none;">
+    <div class="icon">📚</div>
+    <p>书架空空的，添加一本开始吧</p>
+  </div>
+  <div class="shelf-grid" id="shelfGrid"></div>
 </div>
 
-<!-- 弹窗 -->
-<div class="modal-overlay" id="modalOverlay">
+<!-- ===== 单本书页面 ===== -->
+<div class="page page-book" id="pageBook">
+  <div class="header-book">
+    <button class="btn-back" onclick="showShelf()">‹</button>
+    <div class="header-book-title" id="bookHeaderTitle"></div>
+  </div>
+  <div class="add-note-bar">
+    <button class="btn-add-note" onclick="openNoteModal()">+ 添加摘录</button>
+  </div>
+  <div id="emptyNotes" class="empty" style="display:none;">
+    <div class="icon">📖</div>
+    <p>还没有摘录，开始记录吧</p>
+  </div>
+  <div class="timeline" id="timeline"></div>
+</div>
+
+<!-- ===== 添加书 弹窗 ===== -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal">
+    <h2>添加书</h2>
+    <label>书名</label>
+    <input type="text" id="bookTitleInput" placeholder="如：百年孤独">
+    <label>作者</label>
+    <input type="text" id="bookAuthorInput" placeholder="如：加西亚·马尔克斯">
+    <label>封面颜色</label>
+    <div class="color-pick" id="colorPick">
+      <div class="color-opt selected" style="background:#a8b5a0" data-c="#a8b5a0"></div>
+      <div class="color-opt" style="background:#d4b896" data-c="#d4b896"></div>
+      <div class="color-opt" style="background:#b0a0b8" data-c="#b0a0b8"></div>
+      <div class="color-opt" style="background:#a0b8c0" data-c="#a0b8c0"></div>
+      <div class="color-opt" style="background:#c0a8a0" data-c="#c0a8a0"></div>
+      <div class="color-opt" style="background:#9eb5c4" data-c="#9eb5c4"></div>
+    </div>
+    <label>封面图片（可选）</label>
+    <div class="img-upload" onclick="document.getElementById('coverImgInput').click()">
+      <div class="icon">📁</div>
+      <p>点击选择封面图片</p>
+    </div>
+    <input type="file" id="coverImgInput" accept="image/*" style="display:none" onchange="handleCoverSelect(event)">
+    <img class="img-preview" id="coverPreview">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeBookModal()">取消</button>
+      <button class="btn-save" onclick="saveBook()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 添加笔记 弹窗 ===== -->
+<div class="modal-overlay" id="noteModal">
   <div class="modal">
     <h2>添加摘录</h2>
-
-    <label>📷 摘录图片</label>
-    <div class="img-upload-area" onclick="document.getElementById('imgInput').click()">
-      <div class="upload-icon">📁</div>
-      <p>点击选择图片（支持 JPG / PNG）</p>
+    <label>摘录图片</label>
+    <div class="img-upload" onclick="document.getElementById('noteImgInput').click()">
+      <div class="icon">📁</div>
+      <p>点击选择图片</p>
     </div>
-    <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImgSelect(event)">
-    <img class="img-preview" id="imgPreview">
-
-    <label>💬 摘录的句子</label>
-    <textarea class="quote-input" id="quoteInput" placeholder="写下你在阅读中遇到的好句子..."></textarea>
-
-    <label>✍️ 我的感悟</label>
-    <textarea class="thoughts-input" id="thoughtsInput" placeholder="写下你的感受和想法..."></textarea>
-
+    <input type="file" id="noteImgInput" accept="image/*" style="display:none" onchange="handleNoteImgSelect(event)">
+    <img class="img-preview" id="noteImgPreview">
+    <label>摘录的句子</label>
+    <textarea class="quote-input" id="quoteInput" placeholder="写下好句子..."></textarea>
+    <label>感悟</label>
+    <textarea class="thoughts-input" id="thoughtsInput" placeholder="写下你的想法..."></textarea>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">取消</button>
-      <button class="btn-save" onclick="saveEntry()">保存</button>
+      <button class="btn-cancel" onclick="closeNoteModal()">取消</button>
+      <button class="btn-save" onclick="saveNote()">保存</button>
     </div>
   </div>
 </div>
 
 <script>
-// ===== 数据存储（localStorage）=====
-const STORAGE_KEY = 'reading_notes_data';
-let currentImg = null;
-let entries = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+// ===== 数据 =====
+const KEY = 'reader_notes_v2';
+let data = JSON.parse(localStorage.getItem(KEY) || '{"books":[],"currentBook":null}');
+let currentBookId = null;
+let selectedCoverColor = '#a8b5a0';
+let currentCoverImg = null;
+let currentNoteImg = null;
 
-// ===== 渲染 =====
-function render() {
-  const grid = document.getElementById('cardsGrid');
-  const empty = document.getElementById('emptyState');
+function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+function escapeHtml(t) { const d=document.createElement('div'); d.textContent=t||''; return d.innerHTML; }
+function formatDate(d) {
+  const dt = new Date(d);
+  return `${dt.getFullYear()}.${String(dt.getMonth()+1).padStart(2,'0')}.${String(dt.getDate()).padStart(2,'0')}`;
+}
 
-  if (entries.length === 0) {
+// ===== 页面切换 =====
+function showShelf() {
+  document.getElementById('pageShelf').style.display = 'block';
+  document.getElementById('pageBook').style.display = 'none';
+  currentBookId = null;
+  renderShelf();
+  window.scrollTo(0,0);
+}
+function showBook(bookId) {
+  currentBookId = bookId;
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  document.getElementById('pageShelf').style.display = 'none';
+  document.getElementById('pageBook').style.display = 'block';
+  document.getElementById('bookHeaderTitle').textContent = book.title;
+  renderNotes(book);
+  window.scrollTo(0,0);
+}
+
+// ===== 渲染书架 =====
+function renderShelf() {
+  const grid = document.getElementById('shelfGrid');
+  const empty = document.getElementById('emptyShelf');
+  if (data.books.length === 0) {
     empty.style.display = 'block';
     grid.innerHTML = '';
     return;
   }
   empty.style.display = 'none';
-
-  grid.innerHTML = entries.map((e, i) => `
-    <div class="card">
-      <button class="card-delete" onclick="deleteEntry(${i})">✕</button>
-      ${e.image
-        ? `<div class="card-img-wrap"><img src="${e.image}" alt="摘录图片"></div>`
-        : `<div class="card-img-wrap"><div class="img-placeholder">📖</div></div>`
-      }
-      <div class="card-quote">
-        <p><span class="quote-mark">"</span>${escapeHtml(e.quote || '')}<span class="quote-mark">"</span></p>
+  grid.innerHTML = data.books.map(b => `
+    <div class="book-item" onclick="showBook('${b.id}')">
+      <div class="book-cover" style="${b.coverImg ? '' : `background:${b.coverColor||'#a8b5a0'}`}">
+        <button class="book-delete" onclick="event.stopPropagation();deleteBook('${b.id}')">✕</button>
+        ${b.coverImg
+          ? `<img src="${b.coverImg}" alt="${escapeHtml(b.title)}">`
+          : `<div class="cover-placeholder">${escapeHtml(b.title)}</div>`
+        }
       </div>
-      <div class="card-thoughts">
-        <label>✍️ 感悟</label>
-        <div class="lines">
-          <div class="thoughts-text">${escapeHtml(e.thoughts || '') || '<span style="color:#ccc;">还没有写感悟...</span>'}</div>
-        </div>
+      <div class="book-info">
+        <div class="book-title">${escapeHtml(b.title)}</div>
+        ${b.author ? `<div class="book-author">${escapeHtml(b.author)}</div>` : ''}
+        <div class="book-count">${(b.notes||[]).length} 篇摘录</div>
       </div>
-      <div class="card-date">${e.date || ''}</div>
     </div>
   `).join('');
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+// ===== 渲染笔记时间线 =====
+function renderNotes(book) {
+  const tl = document.getElementById('timeline');
+  const empty = document.getElementById('emptyNotes');
+  const notes = book.notes || [];
+  if (notes.length === 0) {
+    empty.style.display = 'block';
+    tl.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  tl.innerHTML = notes.map((n, i) => `
+    <div class="timeline-item">
+      <div class="timeline-date">${formatDate(n.date)}</div>
+      <div class="note-card">
+        ${n.image ? `<img class="note-img" src="${n.image}" alt="">` : ''}
+        ${n.quote ? `<div class="note-quote"><p><span class="qm">"</span>${escapeHtml(n.quote)}<span class="qm">"</span></p></div>` : ''}
+        <div class="note-thoughts">
+          <div class="label">✍ 感悟</div>
+          <div class="lines-bg">
+            <div class="t-text">${escapeHtml(n.thoughts) || '<span style="color:#ddd;">...</span>'}</div>
+          </div>
+        </div>
+        <button class="note-delete" onclick="deleteNote('${book.id}',${i})">删除</button>
+      </div>
+    </div>
+  `).join('');
 }
 
-// ===== 弹窗 =====
-function openModal() {
-  document.getElementById('modalOverlay').classList.add('active');
-  currentImg = null;
-  document.getElementById('imgInput').value = '';
-  document.getElementById('imgPreview').classList.remove('show');
-  document.getElementById('imgPreview').src = '';
-  document.getElementById('quoteInput').value = '';
-  document.getElementById('thoughtsInput').value = '';
+// ===== 书弹窗 =====
+function openBookModal() {
+  document.getElementById('bookModal').classList.add('active');
+  document.getElementById('bookTitleInput').value = '';
+  document.getElementById('bookAuthorInput').value = '';
+  document.getElementById('coverImgInput').value = '';
+  document.getElementById('coverPreview').classList.remove('show');
+  document.getElementById('coverPreview').src = '';
+  currentCoverImg = null;
+  selectedCoverColor = '#a8b5a0';
+  document.querySelectorAll('.color-opt').forEach(el => {
+    el.classList.toggle('selected', el.dataset.c === '#a8b5a0');
+  });
 }
+function closeBookModal() { document.getElementById('bookModal').classList.remove('active'); }
 
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-}
-
-// 点击遮罩关闭
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
+document.querySelectorAll('.color-opt').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.color-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCoverColor = el.dataset.c;
+  });
 });
 
-// ===== 图片选择 =====
-function handleImgSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
+function handleCoverSelect(e) {
+  const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = function(ev) {
-    currentImg = ev.target.result;
-
-    // 压缩图片（如果太大）
+  reader.onload = ev => {
     const img = new Image();
-    img.onload = function() {
+    img.onload = () => {
       const canvas = document.createElement('canvas');
-      const maxW = 1200;
-      let w = img.width, h = img.height;
-      if (w > maxW) { h = h * maxW / w; w = maxW; }
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      currentImg = canvas.toDataURL('image/jpeg', 0.85);
-
-      const preview = document.getElementById('imgPreview');
-      preview.src = currentImg;
-      preview.classList.add('show');
+      let w=img.width,h=img.height; const mx=600;
+      if(w>mx){h=h*mx/w;w=mx;}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      currentCoverImg = canvas.toDataURL('image/jpeg',0.8);
+      const prev = document.getElementById('coverPreview');
+      prev.src = currentCoverImg;
+      prev.classList.add('show');
     };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// ===== 保存 =====
-function saveEntry() {
+function saveBook() {
+  const title = document.getElementById('bookTitleInput').value.trim();
+  if (!title) { alert('请输入书名'); return; }
+  const author = document.getElementById('bookAuthorInput').value.trim();
+  const book = {
+    id: 'b_' + Date.now(),
+    title, author,
+    coverColor: selectedCoverColor,
+    coverImg: currentCoverImg,
+    notes: []
+  };
+  data.books.unshift(book);
+  save();
+  closeBookModal();
+  renderShelf();
+}
+
+function deleteBook(id) {
+  if (!confirm('确定删除这本书及其所有摘录吗？')) return;
+  data.books = data.books.filter(b => b.id !== id);
+  save(); renderShelf();
+}
+
+// ===== 笔记弹窗 =====
+function openNoteModal() {
+  document.getElementById('noteModal').classList.add('active');
+  document.getElementById('noteImgInput').value='';
+  document.getElementById('noteImgPreview').classList.remove('show');
+  document.getElementById('noteImgPreview').src='';
+  document.getElementById('quoteInput').value='';
+  document.getElementById('thoughtsInput').value='';
+  currentNoteImg = null;
+}
+function closeNoteModal() { document.getElementById('noteModal').classList.remove('active'); }
+
+function handleNoteImgSelect(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w=img.width,h=img.height; const mx=1200;
+      if(w>mx){h=h*mx/w;w=mx;}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      currentNoteImg = canvas.toDataURL('image/jpeg',0.85);
+      const prev = document.getElementById('noteImgPreview');
+      prev.src = currentNoteImg;
+      prev.classList.add('show');
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveNote() {
   const quote = document.getElementById('quoteInput').value.trim();
   const thoughts = document.getElementById('thoughtsInput').value.trim();
-
-  if (!quote && !thoughts && !currentImg) {
-    alert('至少写点什么吧 ✨');
-    return;
-  }
-
-  const now = new Date();
-  const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-
-  entries.unshift({
-    image: currentImg,
-    quote: quote,
-    thoughts: thoughts,
-    date: dateStr
+  if (!quote && !thoughts && !currentNoteImg) { alert('至少写点什么吧'); return; }
+  const book = data.books.find(b => b.id === currentBookId);
+  if (!book) return;
+  book.notes = book.notes || [];
+  book.notes.unshift({
+    image: currentNoteImg,
+    quote, thoughts,
+    date: new Date().toISOString()
   });
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  closeModal();
-  render();
+  save();
+  closeNoteModal();
+  renderNotes(book);
+  // 更新书架上的计数
+  renderShelf();
 }
 
-// ===== 删除 =====
-function deleteEntry(index) {
-  if (!confirm('确定要删除这条摘录吗？')) return;
-  entries.splice(index, 1);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  render();
+function deleteNote(bookId, idx) {
+  if (!confirm('删除这条摘录？')) return;
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book.notes.splice(idx, 1);
+  save();
+  renderNotes(book);
+  renderShelf();
 }
 
-// ===== 导出功能（双击标题区触发）=====
-let exportClickCount = 0;
-document.querySelector('header').addEventListener('dblclick', function() {
-  exportClickCount++;
-  if (exportClickCount >= 2) {
-    exportData();
-    exportClickCount = 0;
+// 点击遮罩关闭
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if(e.target===this) this.classList.remove('active'); });
+});
+
+// 双击标题导出
+let ec=0;
+document.querySelector('.header-shelf h1').addEventListener('click',()=>{
+  ec++; if(ec>=3){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='阅读拾遗_'+new Date().toISOString().slice(0,10)+'.json';
+    a.click(); ec=0;
   }
 });
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '阅读摘录_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  alert('数据已导出！');
-}
-
-// ===== Service Worker 注册（PWA 离线支持）=====
+// ===== Service Worker =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      console.log('SW registered:', reg.scope);
-    }).catch(err => console.log('SW failed:', err));
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
   });
 }
 
-// 初始渲染
-render();
+// 初始
+renderShelf();
 </script>
 </body>
 </html>

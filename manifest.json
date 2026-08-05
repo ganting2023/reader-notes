@@ -1,13 +1,13 @@
 {
   "name": "阅读拾遗",
   "short_name": "阅读拾遗",
-  "description": "记录阅读中遇到的好句子和感悟",
+  "description": "记录阅读中的好句子和感悟",
   "start_url": "/reader-notes/",
   "scope": "/reader-notes/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f5f0e8",
-  "theme_color": "#c9974a",
+  "background_color": "#f8f6f3",
+  "theme_color": "#a8b5a0",
   "icons": [
     {
       "src": "icon-192.png",
