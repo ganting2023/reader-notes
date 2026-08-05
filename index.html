@@ -336,33 +336,65 @@ input,textarea{font-family:inherit;}
 }
 .zine-empty .icon{font-size:3rem;margin-bottom:12px;}
 
-/* The Book */
+/* The Book — Double Page Spread */
 .zine-book-wrapper{
-  perspective:2000px;
-  width:100%;max-width:340px;
+  perspective:2500px;
+  width:100%;max-width:520px;
   margin:0 auto;
 }
 .zine-book{
   position:relative;
   width:100%;
-  aspect-ratio:3/4;
+  aspect-ratio:4/3;
   transform-style:preserve-3d;
-  transition:transform .6s ease;
 }
-.zine-page{
+/* Book spine shadow */
+.zine-book::before{
+  content:'';position:absolute;
+  left:50%;top:0;bottom:0;width:2px;
+  background:linear-gradient(to right,rgba(0,0,0,.12),rgba(0,0,0,.03),rgba(0,0,0,.12));
+  z-index:100;pointer-events:none;
+}
+.zine-spread{
   position:absolute;inset:0;
+  display:flex;
+}
+.zine-page-side{
+  flex:1;
+  position:relative;
   background:#fdfcfa;
-  border-radius:6px;
-  box-shadow:0 2px 12px rgba(0,0,0,0.08);
   overflow:hidden;
-  backface-visibility:hidden;
-  transform-origin:left center;
-  transition:transform .7s cubic-bezier(.6,.05,.28,.95);
   display:flex;flex-direction:column;
 }
-.zine-page.flipped{
+.zine-page-side.left{
+  border-radius:6px 2px 2px 6px;
+  box-shadow:inset -8px 0 16px -8px rgba(0,0,0,.12);
+  transform-origin:right center;
+  backface-visibility:hidden;
+  transition:transform .7s cubic-bezier(.6,.05,.28,.95);
+}
+.zine-page-side.right{
+  border-radius:2px 6px 6px 2px;
+  box-shadow:inset 8px 0 16px -8px rgba(0,0,0,.12);
+  transform-origin:left center;
+  backface-visibility:hidden;
+  transition:transform .7s cubic-bezier(.6,.05,.28,.95);
+}
+/* Flipping states */
+.zine-page-side.left.flipped{
   transform:rotateY(-180deg);
 }
+.zine-page-side.right.flipped{
+  transform:rotateY(180deg);
+}
+/* Page stacking: higher z-index on top */
+.zine-spread[data-spread="0"]{z-index:10;}
+.zine-spread[data-spread="1"]{z-index:9;}
+.zine-spread[data-spread="2"]{z-index:8;}
+.zine-spread[data-spread="3"]{z-index:7;}
+.zine-spread[data-spread="4"]{z-index:6;}
+.zine-spread[data-spread="5"]{z-index:5;}
+.zine-spread.hidden{display:none;}
 .zine-page-front-page{
   background:linear-gradient(135deg,#7ea8a2,#c1a6af);
   color:#fff;display:flex;flex-direction:column;
@@ -1608,26 +1640,35 @@ function renderZineBook(){
   const container=document.getElementById('zineContainer');
   const pages=buildZinePages(zineState.monthKey);
   zineState.pages=pages;
-  zineState.currentPage=0;
+  zineState.currentSpread=0;
   
   if(pages.length<=1){
     container.innerHTML='<div class="zine-empty"><div class="icon">📷</div><p>这个月还没有照片</p></div>';
     return;
   }
   
+  // Build spreads: pair pages as left+right
+  const spreads=[];
+  for(let i=0;i<pages.length;i+=2){
+    spreads.push({leftPage:pages[i],rightPage:pages[i+1]||null,leftIdx:i,rightIdx:i+1<pages.length?i+1:-1});
+  }
+  zineState.spreads=spreads;
+  zineState.currentSpread=0;
+  
   let html='<div class="zine-book-wrapper">';
   html+='<div class="zine-book" id="zineBook">';
   
-  pages.forEach((pg,i)=>{
-    html+=renderZinePage(pg,i);
+  spreads.forEach((sp,idx)=>{
+    html+=renderZineSpread(sp,idx);
   });
   
   html+='</div></div>';
   
   // Navigation
+  const totalSpreads=spreads.length;
   html+='<div class="zine-page-nav">';
   html+='<button class="zine-nav-btn" id="zinePrev" onclick="flipZine(-1)">‹</button>';
-  html+='<span class="zine-page-info" id="zinePageInfo">1 / '+pages.length+'</span>';
+  html+='<span class="zine-page-info" id="zinePageInfo">1 / '+totalSpreads+'</span>';
   html+='<button class="zine-nav-btn" id="zineNext" onclick="flipZine(1)">›</button>';
   html+='</div>';
   
@@ -1635,84 +1676,135 @@ function renderZineBook(){
   html+='<button class="zine-share-btn" onclick="shareZine()">分享月度 Zine 📖</button>';
   
   container.innerHTML=html;
-  updateZineNav();
+  showZineSpread(0);
 }
 
-function renderZinePage(pg,i){
-  const zIndex=zineState.pages.length-i;
-  let cls='zine-page';
-  let style='z-index:'+zIndex+';';
+function renderZineSpread(sp,idx){
+  let html='<div class="zine-spread hidden" data-spread="'+idx+'" data-spread-idx="'+idx+'">';
+  // Left page
+  html+='<div class="zine-page-side left" id="zineLeft_'+idx+'">';
+  html+=renderZinePageContent(sp.leftPage);
+  html+='</div>';
+  // Right page
+  html+='<div class="zine-page-side right" id="zineRight_'+idx+'">';
+  if(sp.rightPage){
+    html+=renderZinePageContent(sp.rightPage);
+  }else{
+    // Empty right page (end of book)
+    html+='<div style="display:flex;align-items:center;justify-content:center;height:100%;"><span style="font-family:var(--serif);font-size:0.7rem;color:var(--text-light);letter-spacing:2px;">— FIN —</span></div>';
+  }
+  html+='</div>';
+  html+='</div>';
+  return html;
+}
+
+function renderZinePageContent(pg){
+  if(!pg)return '';
   let inner='';
-  
   if(pg.type==='cover'){
-    cls+=' zine-page-front-page';
-    inner='<div class="month-title">'+pg.title+'</div>';
+    inner='<div class="zine-page-front-page" style="width:100%;height:100%;border-radius:inherit;">';
+    inner+='<div class="month-title">'+pg.title+'</div>';
     inner+='<div class="month-sub">'+pg.sub+'</div>';
     inner+='<div class="month-photos-count">'+pg.count+'</div>';
+    inner+='</div>';
   }else if(pg.type==='text'){
-    cls+=' zine-text-page';
-    inner='<div class="text-title">'+pg.title+'</div>';
+    inner='<div class="zine-text-page" style="width:100%;height:100%;">';
+    inner+='<div class="text-title">'+pg.title+'</div>';
     inner+='<div class="text-body">'+pg.body+'</div>';
     inner+='<div class="text-date">'+pg.date+'</div>';
+    inner+='</div>';
   }else if(pg.type==='photo'){
-    cls+=' zine-photo-page';
+    inner='<div class="zine-photo-page" style="width:100%;height:100%;">';
     if(pg.photos.length===1){
-      inner='<img src="'+pg.photos[0].img+'" loading="lazy">';
+      inner+='<img src="'+pg.photos[0].img+'" loading="lazy" style="flex:1;min-height:0;">';
       if(pg.photos[0].text){
         const t=pg.photos[0].text.length>50?pg.photos[0].text.substring(0,50)+'...':pg.photos[0].text;
         inner+='<div class="photo-caption">'+t+'</div>';
       }
     }else{
-      inner=pg.photos.map((ph,idx)=>{
+      inner+=pg.photos.map((ph,idx)=>{
         const h=idx===0?'55%':'45%';
-        const txt=ph.text&&idx===0?'<div style="padding:6px 12px;font-size:.65rem;color:var(--text-mid);text-align:center;background:#fdfcfa;">'+(ph.text.length>40?ph.text.substring(0,40)+'...':ph.text)+'</div>':'';
-        return '<div style="height:'+h+';overflow:hidden;"><img src="'+ph.img+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>'+txt;
+        const txt=ph.text&&idx===0?'<div style="padding:6px 10px;font-size:.6rem;color:var(--text-mid);text-align:center;background:#fdfcfa;">'+(ph.text.length>35?ph.text.substring(0,35)+'...':ph.text)+'</div>':'';
+        return '<div style="height:'+h+';overflow:hidden;flex-shrink:0;"><img src="'+ph.img+'" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy"></div>'+txt;
       }).join('');
     }
+    inner+='</div>';
   }else if(pg.type==='end'){
-    cls+=' zine-page-front-page';
-    inner='<div class="month-title" style="font-size:1rem;">'+pg.title+'</div>';
+    inner='<div class="zine-page-front-page" style="width:100%;height:100%;border-radius:inherit;">';
+    inner+='<div class="month-title" style="font-size:1rem;">'+pg.title+'</div>';
     inner+='<div class="month-sub">'+pg.sub+'</div>';
     inner+='<div class="month-photos-count">'+pg.count+'</div>';
+    inner+='</div>';
   }
-  
-  return '<div class="'+cls+'" data-page="'+i+'" style="'+style+'">'+inner+'</div>';
+  return inner;
 }
 
 function flipZine(dir){
-  const total=zineState.pages.length;
-  const newPage=zineState.currentPage+dir;
-  if(newPage<0||newPage>=total)return;
-  
-  // Flip current page
-  const pages=document.querySelectorAll('#zineBook .zine-page');
-  const currentPageEl=pages[zineState.currentPage];
+  const total=zineState.spreads.length;
+  const newSpread=zineState.currentSpread+dir;
+  if(newSpread<0||newSpread>=total)return;
   
   if(dir>0){
-    // Forward flip
-    currentPageEl.classList.add('flipped');
-    currentPageEl.style.zIndex=0;
+    // Forward: flip current spread's pages inward
+    const curLeft=document.getElementById('zineLeft_'+zineState.currentSpread);
+    const curRight=document.getElementById('zineRight_'+zineState.currentSpread);
+    if(curLeft)curLeft.classList.add('flipped');
+    if(curRight)curRight.classList.add('flipped');
+    // After animation, hide current and show next
+    setTimeout(()=>{
+      const cur=document.querySelector('.zine-spread[data-spread-idx="'+zineState.currentSpread+'"]');
+      if(cur)cur.classList.add('hidden');
+      zineState.currentSpread=newSpread;
+      showZineSpread(newSpread);
+      updateZineNav();
+    },400);
   }else{
-    // Backward flip — unflip the previous page
-    const prevEl=pages[zineState.currentPage-1];
+    // Backward: unflip previous spread
+    const prevSpread=zineState.currentSpread-1;
+    // Show previous spread first
+    const prevEl=document.querySelector('.zine-spread[data-spread-idx="'+prevSpread+'"]');
     if(prevEl){
-      prevEl.classList.remove('flipped');
-      prevEl.style.zIndex=zineState.pages.length-(zineState.currentPage-1);
+      prevEl.classList.remove('hidden');
+      const prevLeft=document.getElementById('zineLeft_'+prevSpread);
+      const prevRight=document.getElementById('zineRight_'+prevSpread);
+      // Reset flip state
+      if(prevLeft)prevLeft.classList.remove('flipped');
+      if(prevRight)prevRight.classList.remove('flipped');
     }
+    // Hide current after a delay
+    setTimeout(()=>{
+      const cur=document.querySelector('.zine-spread[data-spread-idx="'+zineState.currentSpread+'"]');
+      if(cur)cur.classList.add('hidden');
+      zineState.currentSpread=newSpread;
+      updateZineNav();
+    },400);
   }
-  
-  zineState.currentPage=newPage;
+}
+
+function showZineSpread(idx){
+  document.querySelectorAll('#zineBook .zine-spread').forEach((el,i)=>{
+    if(i===idx){
+      el.classList.remove('hidden');
+      // Reset flip state for visible spread
+      const l=document.getElementById('zineLeft_'+idx);
+      const r=document.getElementById('zineRight_'+idx);
+      if(l)l.classList.remove('flipped');
+      if(r)r.classList.remove('flipped');
+    }else{
+      el.classList.add('hidden');
+    }
+  });
   updateZineNav();
 }
 
 function updateZineNav(){
-  const total=zineState.pages.length;
+  const total=zineState.spreads?zineState.spreads.length:1;
   const info=document.getElementById('zinePageInfo');
   const prev=document.getElementById('zinePrev');
   const next=document.getElementById('zineNext');
-  if(info)info.textContent=(zineState.currentPage+1)+' / '+total;
-  if(prev)prev.disabled=zineState.currentPage===0;
-  if(next)next.disabled=zineState.currentPage===total-1;
+  if(info)info.textContent=(zineState.currentSpread+1)+' / '+total;
+  if(prev)prev.disabled=zineState.currentSpread===0;
+  if(next)next.disabled=zineState.currentSpread>=total-1;
 }
 
 function shareZine(){
