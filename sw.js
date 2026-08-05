@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v29-double-spread';
+const CACHE_NAME = 'miracle-v30-major-upgrade';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',

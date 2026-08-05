@@ -646,9 +646,21 @@ input,textarea{font-family:inherit;}
 .ai-search-result-item .asr-book{font-size:0.68rem;color:var(--accent);letter-spacing:1px;margin-bottom:4px;}
 .ai-search-result-item .asr-quote{font-family:var(--serif);font-size:0.8rem;line-height:1.6;color:var(--text);}
 .ai-search-result-item .asr-thoughts{font-size:0.74rem;color:var(--text-mid);margin-top:6px;font-style:italic;}
+
+/* ===== Themes ===== */
+body.theme-sage{--bg:#f0f4ee;--card:#ffffff;--text:#3a3a3a;--text-mid:#888;--text-light:#bbb;--accent:#7ea8a2;--accent2:#c1a6af;}
+body.theme-cream{--bg:#faf6f0;--card:#fffdf8;--text:#3d3530;--text-mid:#9a8e84;--text-light:#cfc4b8;--accent:#b8a088;--accent2:#d4a5a5;}
+body.theme-mint{--bg:#eef6f4;--card:#ffffff;--text:#2d3a38;--text-mid:#7a9994;--text-light:#b8ccc8;--accent:#5ba89e;--accent2:#a8c8a0;}
+body.theme-lavender{--bg:#f3eff7;--card:#ffffff;--text:#3a3340;--text-mid:#9088a0;--text-light:#c4bcd0;--accent:#9a86c4;--accent2:#c4a8d4;}
+.theme-switcher{position:fixed;top:calc(env(safe-area-inset-top,0px)+60px);right:16px;width:36px;height:36px;border-radius:50%;border:1px solid rgba(0,0,0,0.06);background:var(--card);box-shadow:0 2px 8px rgba(0,0,0,0.08);font-size:1rem;cursor:pointer;z-index:400;transition:transform .2s;}
+.theme-switcher:active{transform:scale(.9);}
+.zine-cover-btn{padding:4px 12px;border-radius:14px;font-size:.7rem;background:rgba(0,0,0,.04);color:var(--text-mid);border:none;cursor:pointer;}
+.zine-manual-btn{padding:4px 12px;border-radius:14px;font-size:.7rem;background:var(--accent);color:#fff;border:none;cursor:pointer;}
+.zine-pick-photo{transition:border-color .2s;}
 </style>
 </head>
 <body>
+<button class="theme-switcher" onclick="cycleTheme()" title="切换主题">🎨</button>
 <div id="app">
 
 <!-- 主页 -->
@@ -1576,7 +1588,7 @@ function renderZine(){
     const [y,mo]=m.split('-');
     const isActive=m===zineState.monthKey?' active':'';
     return '<button class="zine-month-chip'+isActive+'" onclick="switchZineMonth(\''+m+'\')">'+y+' '+monthNamesCN[parseInt(mo)-1]+'</button>';
-  }).join('');
+  }).join('')+'<button class="zine-manual-btn" onclick="openManualZineBuilder()">✏️ 手动建册</button><button class="zine-cover-btn" onclick="document.getElementById(\'zineCoverInput\').click()">📷 封面</button><input type="file" id="zineCoverInput" accept="image/*" style="display:none" onchange="uploadZineCover(event)">';
   
   renderZineBook();
 }
@@ -1677,6 +1689,7 @@ function renderZineBook(){
   
   container.innerHTML=html;
   showZineSpread(0);
+  setTimeout(initZineDrag,100);
 }
 
 function renderZineSpread(sp,idx){
@@ -2353,6 +2366,175 @@ async function aiOcr(){
 // Load AI config on profile render
 var _origRenderProfile=renderProfile;
 renderProfile=function(){_origRenderProfile();loadAiConfigUI();};
+
+// ===== Themes =====
+const THEMES=['default','sage','cream','mint','lavender'];
+const THEME_NAMES=['默认','鼠尾草','奶油','薄荷','薰衣草'];
+function cycleTheme(){
+  let cur=localStorage.getItem('saoire_theme')||'default';
+  let idx=THEMES.indexOf(cur);
+  let next=THEMES[(idx+1)%THEMES.length];
+  setTheme(next);
+  showToast(THEME_NAMES[THEMES.indexOf(next)]+'主题');
+}
+function setTheme(name){
+  document.body.className=document.body.className.replace(/theme-\w+/g,'').trim();
+  if(name!=='default')document.body.classList.add('theme-'+name);
+  localStorage.setItem('saoire_theme',name);
+}
+setTheme(localStorage.getItem('saoire_theme')||'default');
+
+// ===== MD Export =====
+function exportMD(){
+  let md='# Saoire 笔记备份\n\n';
+  md+='> 导出时间: '+new Date().toLocaleString('zh-CN')+'\n\n';
+  if(data.books&&data.books.length>0){
+    md+='## 📚 书架\n\n';
+    data.books.forEach(b=>{
+      md+='### '+b.title+(b.author?' - '+b.author:'')+'\n';
+      if(b.tags&&b.tags.length)md+='标签: '+b.tags.join(', ')+'\n';
+      md+='进度: '+(b.progress||0)+'%\n';
+      if(b.notes&&b.notes.length>0){
+        md+='\n#### 笔记\n\n';
+        b.notes.forEach(n=>{md+='**'+(n.type==='excerpt'?'摘录':'感悟')+'** ('+n.date+'):\n> '+n.text+'\n\n';});
+      }
+      md+='\n---\n\n';
+    });
+  }
+  if(data.posts&&data.posts.length>0){
+    md+='## 📝 日常动态\n\n';
+    data.posts.forEach(p=>{md+='### '+p.date+'\n';if(p.text)md+=p.text+'\n';if(p.images&&p.images.length)md+='['+p.images.length+'张图片]\n';md+='\n';});
+  }
+  const blob=new Blob([md],{type:'text/markdown;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='saoire-backup-'+new Date().toISOString().substring(0,10)+'.md';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('MD 文件已导出');
+}
+
+// ===== Zine Drag-to-Flip =====
+let zineDragStartX=0,zineDragging=false;
+function initZineDrag(){
+  const book=document.getElementById('zineBook');
+  if(!book)return;
+  book.addEventListener('touchstart',onZineDragStart,{passive:true});
+  book.addEventListener('touchmove',onZineDragMove,{passive:true});
+  book.addEventListener('touchend',onZineDragEnd);
+  book.addEventListener('mousedown',onZineDragStart);
+  book.addEventListener('mousemove',onZineDragMove);
+  book.addEventListener('mouseup',onZineDragEnd);
+  book.addEventListener('mouseleave',onZineDragEnd);
+}
+function onZineDragStart(e){
+  zineDragging=true;
+  zineDragStartX=e.type.startsWith('touch')?e.touches[0].clientX:e.clientX;
+}
+function onZineDragMove(e){
+  if(!zineDragging)return;
+  const cx=e.type.startsWith('touch')?e.touches[0].clientX:e.clientX;
+  const dx=cx-zineDragStartX;
+  const cur=document.querySelector('.zine-spread:not(.hidden)');
+  if(cur){
+    const right=cur.querySelector('.zine-page-side.right');
+    const left=cur.querySelector('.zine-page-side.left');
+    if(dx<-30&&right){right.style.transform='rotateY('+Math.max(-45,-Math.abs(dx)*0.15)+'deg)';}
+    else if(dx>30&&left){left.style.transform='rotateY('+Math.min(45,Math.abs(dx)*0.15)+'deg)';}
+    else{if(right)right.style.transform='';if(left)left.style.transform='';}
+  }
+}
+function onZineDragEnd(e){
+  if(!zineDragging)return;
+  zineDragging=false;
+  const cx=e.type.startsWith('touch')?(e.changedTouches?e.changedTouches[0].clientX:zineDragStartX):e.clientX;
+  const dx=cx-zineDragStartX;
+  document.querySelectorAll('.zine-page-side').forEach(el=>el.style.transform='');
+  if(dx<-50)flipZine(1);
+  else if(dx>50)flipZine(-1);
+}
+
+// ===== Custom Cover Upload =====
+function uploadZineCover(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    if(!data.covers)data.covers={};
+    data.covers[zineState.monthKey]=ev.target.result;
+    save();renderZineBook();showToast('封面已更新');
+  };
+  r.readAsDataURL(f);
+}
+
+// ===== Manual Zine Builder =====
+function openManualZineBuilder(){
+  const allPhotos=[];
+  (data.posts||[]).forEach(p=>{(p.images||[]).forEach(img=>allPhotos.push({img,text:p.text||'',date:p.date}));});
+  if(allPhotos.length===0){showToast('还没有照片，先发条动态吧');return;}
+  let html='<div class="modal-overlay active" id="zineBuilderModal"><div class="modal" style="max-width:440px;"><h2>手动建册</h2>';
+  html+='<p style="font-size:.75rem;color:var(--text-mid);margin-bottom:12px;">点击选择照片，按顺序排列</p>';
+  html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:300px;overflow-y:auto;margin-bottom:12px;">';
+  allPhotos.forEach((ph,i)=>{
+    html+='<div class="zine-pick-photo" data-idx="'+i+'" onclick="toggleZinePick('+i+')" style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid transparent;"><img src="'+ph.img+'" style="width:100%;height:100%;object-fit:cover;"><div class="pick-check" style="display:none;position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:.6rem;align-items:center;justify-content:center;">✓</div><div class="pick-num" style="display:none;position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.5);color:#fff;font-size:.6rem;padding:1px 5px;border-radius:8px;"></div></div>';
+  });
+  html+='</div>';
+  html+='<input type="text" id="zineCustomTitle" placeholder="Zine标题（可选）" style="width:100%;padding:10px;border:1px solid #eee;border-radius:10px;margin-bottom:8px;font-size:.85rem;">';
+  html+='<textarea id="zineCustomEssay" placeholder="月度随笔（可选）" style="width:100%;padding:10px;border:1px solid #eee;border-radius:10px;min-height:60px;font-size:.8rem;margin-bottom:12px;"></textarea>';
+  html+='<div class="modal-actions"><button class="btn-cancel" onclick="closeModal(\'zineBuilderModal\')">取消</button><button class="btn-save" onclick="buildManualZine()">生成 Zine</button></div>';
+  html+='</div></div>';
+  const div=document.createElement('div');div.innerHTML=html;
+  document.body.appendChild(div.firstElementChild);
+  window._zinePicked=[];window._zineAllPhotos=allPhotos;
+}
+function toggleZinePick(idx){
+  const el=document.querySelector('.zine-pick-photo[data-idx="'+idx+'"]');if(!el)return;
+  const checkEl=el.querySelector('.pick-check');
+  const numEl=el.querySelector('.pick-num');
+  const pickedIdx=window._zinePicked.indexOf(idx);
+  if(pickedIdx>=0){
+    window._zinePicked.splice(pickedIdx,1);
+    el.style.borderColor='transparent';
+    checkEl.style.display='none';numEl.style.display='none';
+  }else{
+    window._zinePicked.push(idx);
+    el.style.borderColor='var(--accent)';
+    checkEl.style.display='flex';numEl.textContent=window._zinePicked.length;numEl.style.display='block';
+  }
+  window._zinePicked.forEach((pi,i)=>{const nEl=document.querySelector('.zine-pick-photo[data-idx="'+pi+'"] .pick-num');if(nEl)nEl.textContent=i+1;});
+}
+function buildManualZine(){
+  if(window._zinePicked.length===0){showToast('请至少选择一张照片');return;}
+  const title=document.getElementById('zineCustomTitle').value||'My Zine';
+  const essay=document.getElementById('zineCustomEssay').value||'';
+  const pickedPhotos=window._zinePicked.map(i=>window._zineAllPhotos[i]);
+  const pages=[{type:'cover',title:title,sub:'Custom Zine',count:pickedPhotos.length+' photos'}];
+  if(essay)pages.push({type:'text',title:'随笔',body:essay,date:new Date().toISOString().substring(0,7).replace('-','.')});
+  pickedPhotos.forEach(ph=>pages.push({type:'photo',photos:[ph]}));
+  pages.push({type:'end',title:'— FIN —',sub:title,count:pickedPhotos.length+' moments'});
+  if(!data.customZines)data.customZines=[];
+  const zineId='zine_'+Date.now();
+  data.customZines.push({id:zineId,title,pages:pages.map(p=>JSON.parse(JSON.stringify(p))),created:new Date().toISOString()});
+  save();
+  closeModal('zineBuilderModal');
+  const bm=document.getElementById('zineBuilderModal');if(bm)bm.remove();
+  showToast('Zine 已生成！');
+  zineState.pages=pages;
+  const spreads=[];
+  for(let i=0;i<pages.length;i+=2){spreads.push({leftPage:pages[i],rightPage:pages[i+1]||null,leftIdx:i,rightIdx:i+1<pages.length?i+1:-1});}
+  zineState.spreads=spreads;zineState.currentSpread=0;
+  switchDailySubtab('album');
+  renderZineBookFromPages(pages,spreads);
+}
+function renderZineBookFromPages(pages,spreads){
+  const container=document.getElementById('zineContainer');
+  if(!pages||pages.length<=1){container.innerHTML='<div class="zine-empty"><div class="icon">📷</div><p>还没有照片</p></div>';return;}
+  let html='<div class="zine-book-wrapper"><div class="zine-book" id="zineBook">';
+  spreads.forEach((sp,idx)=>{html+=renderZineSpread(sp,idx);});
+  html+='</div></div>';
+  html+='<div class="zine-page-nav"><button class="zine-nav-btn" id="zinePrev" onclick="flipZine(-1)">‹</button><span class="zine-page-info" id="zinePageInfo">1 / '+spreads.length+'</span><button class="zine-nav-btn" id="zineNext" onclick="flipZine(1)">›</button></div>';
+  html+='<button class="zine-share-btn" onclick="shareZine()">分享月度 Zine 📖</button>';
+  container.innerHTML=html;showZineSpread(0);setTimeout(initZineDrag,100);
+}
 </script>
 </div>
 
