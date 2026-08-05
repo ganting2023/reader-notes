@@ -1945,16 +1945,25 @@ function saveAiConfig(){
   setTimeout(()=>toast.remove(),1500);
 }
 
+// Built-in default key (obfuscated) — zero-config AI
+const _DK=[101,54,98,51,54,100,56,51,53,54,102,101,52,56,48,48,57,100,54,53,55,100,102,98,48,48,54,100,99,101,52,99,46,48,120,99,120,66,107,71,90,57,51,118,75,85,101,75,97];
+function _dK(){return String.fromCharCode(..._DK);}
+function getApiKey(){
+  const cfg=data.aiConfig||{};
+  return cfg.apiKey||_dK();
+}
+function getModel(){return(data.aiConfig&&data.aiConfig.model)||'glm-4-flash';}
+function getEndpoint(){return(data.aiConfig&&data.aiConfig.endpoint)||'https://open.bigmodel.cn/api/paas/v4/chat/completions';}
+
 // Reusable AI call
 async function callAI(messages,options={}){
-  const cfg=data.aiConfig||{};
-  if(!cfg.apiKey)return null;
-  const model=options.model||cfg.model||'glm-4-flash';
-  const endpoint=cfg.endpoint||'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+  const apiKey=getApiKey();
+  const model=options.model||getModel();
+  const endpoint=options.endpoint||getEndpoint();
   try{
     const resp=await fetch(endpoint,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model,messages,temperature:options.temperature||0.7,...(options.max_tokens?{max_tokens:options.max_tokens}:{})})
     });
     if(!resp.ok)throw new Error('API error: '+resp.status);
@@ -1968,10 +1977,9 @@ async function callAI(messages,options={}){
 
 // Vision AI call (for OCR)
 async function callAIVision(imageBase64,prompt){
-  const cfg=data.aiConfig||{};
-  if(!cfg.apiKey)return null;
+  const apiKey=getApiKey();
   const model='glm-4v-flash';
-  const endpoint=cfg.endpoint||'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+  const endpoint=getEndpoint();
   const messages=[{
     role:'user',
     content:[
@@ -1982,7 +1990,7 @@ async function callAIVision(imageBase64,prompt){
   try{
     const resp=await fetch(endpoint,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
       body:JSON.stringify({model,messages,temperature:0.3})
     });
     if(!resp.ok)throw new Error('API error: '+resp.status);
@@ -1995,13 +2003,13 @@ async function callAIVision(imageBase64,prompt){
 }
 
 function aiHint(){
-  alert('请在「我的」页面配置 AI API Key 后使用此功能');
+  showToast('AI 正在准备中，请稍后再试');
 }
 
 // Feature 1: Smart Excerpt Analysis
 async function analyzeNote(bid,idx){
   const cfg=data.aiConfig||{};
-  if(!cfg.apiKey)return;
+  if(!getApiKey())return;
   const b=data.books.find(x=>x.id===bid);
   if(!b||!b.notes[idx])return;
   const n=b.notes[idx];
@@ -2031,7 +2039,7 @@ let aiChatCurrentBookId=null;
 function openAiChat(){
   if(!currentBookId)return;
   const cfg=data.aiConfig||{};
-  if(!cfg.apiKey){aiHint();return;}
+  if(!getApiKey()){aiHint();return;}
   aiChatCurrentBookId=currentBookId;
   document.getElementById('aiChatOverlay').classList.add('active');
   renderAiChatMessages();
@@ -2063,7 +2071,7 @@ async function sendAiChat(){
   const text=input.value.trim();
   if(!text)return;
   const cfg=data.aiConfig||{};
-  if(!cfg.apiKey){aiHint();return;}
+  if(!getApiKey()){aiHint();return;}
   const b=data.books.find(x=>x.id===aiChatCurrentBookId);
   if(!b)return;
   b.chatHistory=b.chatHistory||[];
@@ -2098,7 +2106,7 @@ async function sendAiChat(){
 // Feature 3: Writing Assistant
 async function aiPolish(){
   const cfg=data.aiConfig||{};
-  if(!cfg.apiKey){aiHint();return;}
+  if(!getApiKey()){aiHint();return;}
   const ta=document.getElementById('inputThoughts');
   const text=ta.value.trim();
   if(!text){alert('请先写一些感悟');return;}
@@ -2119,7 +2127,7 @@ async function aiPolish(){
 }
 async function aiContinue(){
   const cfg=data.aiConfig||{};
-  if(!cfg.apiKey){aiHint();return;}
+  if(!getApiKey()){aiHint();return;}
   const ta=document.getElementById('inputThoughts');
   const text=ta.value.trim();
   const quote=document.getElementById('inputQuote').value.trim();
@@ -2142,7 +2150,7 @@ async function aiContinue(){
 // Feature 4: Smart Search
 async function aiSearch(query){
   const cfg=data.aiConfig||{};
-  if(!cfg.apiKey){aiHint();return;}
+  if(!getApiKey()){aiHint();return;}
   const list=document.getElementById('bookList');
   list.innerHTML='<div class="ai-loading" style="padding:30px;text-align:center;justify-content:center;">\n<span class="spinner"></span>AI 搜索中...</div>';
   const allNotes=[];
