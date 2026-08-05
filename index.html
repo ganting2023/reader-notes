@@ -23,8 +23,8 @@
   --accent2:#9eb5c4;
   --accent3:#d4b896;
   --gradient:linear-gradient(135deg,#e8ede5 0%,#e8e0d5 50%,#e0e8ec 100%);
-  --glass:rgba(255,255,255,0.72);
-  --glass-border:rgba(255,255,255,0.9);
+  --glass:rgba(255,255,255,0.5);
+  --glass-border:rgba(255,255,255,0.5);
   --shadow:0 1px 3px rgba(0,0,0,0.03);
   --shadow-md:0 4px 20px rgba(0,0,0,0.06);
   --radius:16px;
@@ -49,7 +49,7 @@ input,textarea{font-family:inherit;}
 .page.active{display:block;}
 
 /* ===== 标题 ===== */
-.app-header{text-align:center;padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 8px;}
+.app-header{text-align:center;padding:calc(env(safe-area-inset-top,0px) + 40px) 20px 8px;position:relative;}
 .app-header h1{
   font-family:var(--serif);font-size:1.6rem;font-weight:400;
   letter-spacing:6px;
@@ -58,6 +58,14 @@ input,textarea{font-family:inherit;}
   background-clip:text;
 }
 .app-header .sub{font-size:0.62rem;color:var(--text-light);letter-spacing:4px;margin-top:4px;font-weight:300;}
+
+/* Search button in header */
+.header-search-btn{position:absolute;right:16px;top:calc(env(safe-area-inset-top,0px) + 44px);font-size:1.1rem;color:var(--text-mid);cursor:pointer;padding:4px 8px;transition:color 0.2s;z-index:5;}
+.header-search-btn:active{transform:scale(0.9);}
+.search-bar{display:none;max-width:680px;margin:0 auto;padding:4px 16px 8px;}
+.search-bar.active{display:flex;}
+.search-bar input{flex:1;border:1px solid var(--line);border-radius:20px;padding:8px 16px;font-size:0.82rem;color:var(--text);background:rgba(255,255,255,0.8);}
+.search-bar input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(126,168,162,0.08);}
 
 /* ===== 书列表 ===== */
 .book-list{max-width:680px;margin:0 auto;padding:8px 16px;}
@@ -137,6 +145,22 @@ input,textarea{font-family:inherit;}
 .trend-col .tbar.active{opacity:1;}
 .trend-col .tmon{font-size:0.52rem;color:var(--text-light);}
 
+/* Stats sub-tabs */
+.stats-sub-tabs{display:flex;gap:0;margin-bottom:16px;background:var(--card);border-radius:12px;padding:3px;box-shadow:var(--shadow);}
+.stats-sub-tab{flex:1;text-align:center;padding:10px;font-size:0.82rem;color:var(--text-mid);border-radius:10px;cursor:pointer;transition:all 0.25s;letter-spacing:2px;}
+.stats-sub-tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;}
+.stats-section{display:none;}
+.stats-section.active{display:block;}
+
+/* Calendar heatmap */
+.heatmap-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:10px;}
+.heatmap-cell{aspect-ratio:1;border-radius:4px;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:var(--text-light);}
+.heatmap-cell.hm-1{background:rgba(126,168,162,0.25);}
+.heatmap-cell.hm-2{background:rgba(126,168,162,0.5);}
+.heatmap-cell.hm-3{background:rgba(126,168,162,0.75);}
+.heatmap-cell.hm-4{background:rgba(126,168,162,1);}
+.heatmap-labels{display:flex;justify-content:space-between;font-size:0.52rem;color:var(--text-light);margin-top:6px;}
+
 /* ===== 书详情 ===== */
 .book-detail-header{display:flex;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 40px) 16px 8px;}
 .book-detail-header .back{font-size:1.3rem;color:var(--text-mid);padding:4px 8px;}
@@ -198,20 +222,20 @@ input,textarea{font-family:inherit;}
 /* ===== 程序坞 ===== */
 .dock{
   position:fixed;bottom:calc(var(--safe) + 10px);left:50%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:4px;
+  display:flex;align-items:center;gap:2px;
   background:var(--glass);
-  backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);
+  backdrop-filter:blur(28px) saturate(2.0);-webkit-backdrop-filter:blur(28px) saturate(2.0);
   border:0.5px solid var(--glass-border);
-  border-radius:30px;padding:7px 8px;
-  box-shadow:0 4px 24px rgba(0,0,0,0.06),inset 0 1px 1px rgba(255,255,255,0.8);
+  border-radius:30px;padding:7px 6px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.04),inset 0 1px 1px rgba(255,255,255,0.5);
   z-index:100;
 }
-.dock-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 20px;border-radius:22px;transition:all 0.25s;position:relative;}
+.dock-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 16px;border-radius:22px;transition:all 0.25s;position:relative;}
 .dock-item:active{transform:scale(0.92);}
-.dock-item.active{background:rgba(255,255,255,0.6);}
+.dock-item.active{background:rgba(255,255,255,0.4);}
 .dock-item.active .dock-label{color:var(--accent);}
-.dock-icon{font-size:1.25rem;line-height:1;}
-.dock-label{font-size:0.56rem;color:var(--text-mid);letter-spacing:1px;transition:color 0.25s;}
+.dock-icon{font-size:1.2rem;line-height:1;}
+.dock-label{font-size:0.54rem;color:var(--text-mid);letter-spacing:1px;transition:color 0.25s;}
 
 /* ===== 弹窗 ===== */
 .modal-overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(50,50,50,0.25);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
@@ -248,7 +272,7 @@ input,textarea{font-family:inherit;}
 .empty .icon{font-size:2.5rem;margin-bottom:10px;}
 .empty p{font-size:0.8rem;letter-spacing:1px;}
 
-@media(max-width:380px){.notes-grid{gap:10px;}.book-row .cover,.book-row .cover-ph{width:46px;height:62px;}}
+@media(max-width:380px){.notes-grid{gap:10px;}.book-row .cover,.book-row .cover-ph{width:46px;height:62px;}.dock-item{padding:8px 12px;}}
 /* 长按菜单 */
 .press-menu{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;}
 .press-menu.active{display:flex;}
@@ -271,16 +295,19 @@ input,textarea{font-family:inherit;}
 .daily-feed{max-width:600px;margin:0 auto;padding:0 16px;}
 .post-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,0.02);}
 .post-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.post-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.82rem;font-weight:500;flex-shrink:0;}
+.post-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.82rem;font-weight:500;flex-shrink:0;overflow:hidden;}
+.post-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
 .post-user{font-size:0.85rem;font-weight:500;color:var(--text);}
 .post-time{font-size:0.68rem;color:var(--text-light);margin-top:1px;}
 .post-text{font-size:0.88rem;line-height:1.7;color:var(--text);margin-bottom:10px;white-space:pre-wrap;word-break:break-word;}
 .post-images{display:grid;gap:4px;margin-bottom:10px;}
 .post-images.single img{border-radius:10px;width:100%;max-height:300px;object-fit:cover;}
+.post-images.single video{border-radius:10px;width:100%;max-height:300px;object-fit:cover;}
 .post-images.two{grid-template-columns:1fr 1fr;}
 .post-images.three{grid-template-columns:repeat(3,1fr);}
 .post-images.four{grid-template-columns:1fr 1fr;}
 .post-images img{border-radius:8px;width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.post-images video{border-radius:8px;width:100%;aspect-ratio:1;object-fit:cover;display:block;}
 .post-actions{display:flex;gap:20px;padding-top:8px;border-top:1px solid var(--line);}
 .post-action{display:flex;align-items:center;gap:5px;font-size:0.76rem;color:var(--text-mid);cursor:pointer;transition:color 0.2s;}
 .post-action:active{transform:scale(0.95);}
@@ -292,35 +319,67 @@ input,textarea{font-family:inherit;}
 .post-comment-input input{flex:1;border:1px solid var(--line);border-radius:18px;padding:6px 14px;font-size:0.76rem;color:var(--text);background:#fafafa;}
 .post-comment-input input:focus{outline:none;border-color:var(--accent);}
 .post-comment-input button{background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:18px;font-size:0.74rem;cursor:pointer;}
-.post-delete{float:right;color:var(--text-light);font-size:0.7rem;cursor:pointer;padding:2px 6px;}
+.post-top-actions{float:right;display:flex;gap:6px;align-items:center;}
+.post-edit{color:var(--text-light);font-size:0.7rem;cursor:pointer;padding:2px 6px;}
+.post-edit:hover{color:var(--accent);}
+.post-delete{color:var(--text-light);font-size:0.7rem;cursor:pointer;padding:2px 6px;}
 .post-delete:hover{color:#c08080;}
 
 /* 发帖弹窗额外样式 */
 .post-img-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
 .post-img-thumbs .thumb{position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;}
 .post-img-thumbs .thumb img{width:100%;height:100%;object-fit:cover;}
+.post-img-thumbs .thumb video{width:100%;height:100%;object-fit:cover;}
 .post-img-thumbs .thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.5);color:#fff;border:none;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.post-video-thumb{position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;background:#000;}
+.post-video-thumb video{width:100%;height:100%;object-fit:cover;}
 
 /* Edit image button */
 .btn-edit-img{display:block;width:100%;margin-top:8px;padding:8px;text-align:center;font-size:0.76rem;color:var(--accent);background:rgba(126,168,162,0.08);border:1px solid rgba(126,168,162,0.2);border-radius:8px;letter-spacing:1px;}
+
+/* ===== 个人页 ===== */
+.profile-wrap{max-width:500px;margin:0 auto;padding:24px 20px;text-align:center;}
+.profile-avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 16px;overflow:hidden;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);position:relative;transition:all 0.25s;}
+.profile-avatar:active{transform:scale(0.96);}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;}
+.profile-avatar .avatar-hint{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.4);color:#fff;font-size:0.58rem;padding:3px;text-align:center;}
+.profile-name-input{font-size:1.2rem;text-align:center;border:none;border-bottom:2px solid var(--line);padding:8px;margin-bottom:12px;color:var(--text);background:transparent;font-family:var(--serif);width:100%;}
+.profile-name-input:focus{outline:none;border-bottom-color:var(--accent);}
+.profile-bio{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:0.84rem;color:var(--text);background:#fafafa;min-height:70px;resize:vertical;line-height:1.6;}
+.profile-bio:focus{outline:none;border-color:var(--accent);background:#fff;}
+.profile-stats{display:flex;justify-content:center;gap:30px;margin:20px 0;}
+.profile-stat{text-align:center;}
+.profile-stat .ps-num{font-family:var(--serif);font-size:1.4rem;color:var(--text);}
+.profile-stat .ps-lbl{font-size:0.65rem;color:var(--text-light);letter-spacing:2px;margin-top:2px;}
+.profile-save-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:11px 32px;border-radius:22px;font-size:0.84rem;letter-spacing:2px;border:none;cursor:pointer;box-shadow:0 2px 10px rgba(126,168,162,0.3);margin-top:16px;}
+.profile-save-btn:active{transform:scale(0.96);}
 
 /* Image Editor */
 #imgEditor{display:none;position:fixed;inset:0;z-index:9999;background:#1a1a1a;flex-direction:column;align-items:center;}
 #imgEditor.active{display:flex;}
 #imgEditorCanvas-wrap{flex:1;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
 #imgEditorCanvas{display:block;touch-action:none;}
-#imgEditorToolbar{width:100%;padding:10px 12px calc(var(--safe) + 10px);background:#222;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;}
-#imgEditorToolbar .tool-btn{padding:8px 12px;border-radius:8px;font-size:0.72rem;color:#ddd;background:#333;border:1px solid #444;transition:all 0.2s;}
+#imgEditorToolbar{width:100%;padding:8px 8px calc(var(--safe) + 8px);background:#222;overflow-x:auto;overflow-y:hidden;white-space:nowrap;display:flex;gap:4px;align-items:center;}
+#imgEditorToolbar::-webkit-scrollbar{display:none;}
+#imgEditorToolbar .tool-group{display:inline-flex;gap:4px;align-items:center;padding:0 6px;border-right:1px solid #333;}
+#imgEditorToolbar .tool-group:last-child{border-right:none;}
+#imgEditorToolbar .tool-btn{padding:8px 10px;border-radius:8px;font-size:0.7rem;color:#ddd;background:#333;border:1px solid #444;transition:all 0.2s;white-space:nowrap;flex-shrink:0;}
 #imgEditorToolbar .tool-btn:active{transform:scale(0.95);}
 #imgEditorToolbar .tool-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-#imgEditorToolbar .tool-spacer{flex:1;}
-#imgEditorToolbar .pen-color{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all 0.2s;}
+#imgEditorToolbar .tool-spacer{flex:1;min-width:4px;}
+#imgEditorToolbar .pen-color{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
 #imgEditorToolbar .pen-color.active{border-color:#fff;transform:scale(1.15);}
-#imgEditorToolbar .tool-save{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;font-size:0.8rem;padding:8px 20px;border-radius:20px;}
-#imgEditorToolbar .tool-cancel{background:#444;color:#ccc;border:1px solid #555;font-size:0.8rem;padding:8px 16px;border-radius:20px;}
-.sticky-note-el{position:absolute;min-width:60px;min-height:40px;background:#fff9c4;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.3);padding:6px 8px;font-size:0.65rem;color:#5a4a2a;cursor:move;user-select:none;z-index:10;transform:rotate(-2deg);line-height:1.4;word-break:break-word;max-width:120px;}
-.sticky-note-el .sticky-del{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:#e88;background:#c44;color:#fff;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-.sticky-note-el textarea{width:100%;min-width:60px;border:none;background:transparent;font-size:0.65rem;color:#5a4a2a;resize:none;outline:none;font-family:inherit;line-height:1.4;}
+#imgEditorToolbar .pen-size{width:30px;height:30px;border-radius:50%;border:1px solid #444;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;background:#333;flex-shrink:0;}
+#imgEditorToolbar .pen-size.active{border-color:var(--accent);}
+#imgEditorToolbar .pen-size .dot{border-radius:50%;background:#ddd;}
+#imgEditorToolbar .sticky-color{width:26px;height:26px;border-radius:6px;border:2px solid transparent;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+#imgEditorToolbar .sticky-color.active{border-color:#fff;transform:scale(1.1);}
+#imgEditorToolbar .tool-save{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;font-size:0.76rem;padding:8px 16px;border-radius:20px;}
+#imgEditorToolbar .tool-cancel{background:#444;color:#ccc;border:1px solid #555;font-size:0.76rem;padding:8px 14px;border-radius:20px;}
+.sticky-note-el{position:absolute;min-width:60px;min-height:40px;background:#fff9c4;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.3);padding:6px 8px;font-size:0.65rem;color:#5a4a2a;cursor:move;user-select:none;z-index:10;transform:rotate(-2deg);line-height:1.4;word-break:break-word;display:flex;align-items:center;justify-content:center;text-align:center;}
+.sticky-note-el .sticky-del{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:#c44;color:#fff;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.sticky-note-el textarea{width:100%;min-width:60px;border:none;background:transparent;font-size:inherit;color:inherit;resize:none;outline:none;font-family:inherit;line-height:1.4;text-align:center;}
+.sticky-note-el .sticky-text{width:100%;word-break:break-word;}
 </style>
 </head>
 <body>
@@ -331,6 +390,10 @@ input,textarea{font-family:inherit;}
   <div class="app-header">
     <h1>Saoire</h1>
     <div class="sub">R E A D I N G &nbsp; J O U R N A L</div>
+    <div class="header-search-btn" onclick="toggleHomeSearch()">🔍</div>
+  </div>
+  <div class="search-bar" id="homeSearchBar">
+    <input type="text" id="homeSearchInput" placeholder="搜索书名、作者、标签..." oninput="searchHome(this.value)">
   </div>
   <div class="add-btn-wrap">
     <button class="btn-add" onclick="openBookModal()">+ 添加书</button>
@@ -345,7 +408,14 @@ input,textarea{font-family:inherit;}
     <h1>统计</h1>
     <div class="sub">S T A T I S T I C S</div>
   </div>
-  <div class="stats-wrap" id="statsWrap"></div>
+  <div class="stats-wrap">
+    <div class="stats-sub-tabs">
+      <div class="stats-sub-tab active" onclick="switchStatsTab('reading')">阅读统计</div>
+      <div class="stats-sub-tab" onclick="switchStatsTab('daily')">日常统计</div>
+    </div>
+    <div class="stats-section active" id="statsReading"></div>
+    <div class="stats-section" id="statsDaily"></div>
+  </div>
 </div>
 
 <!-- 日常 -->
@@ -353,12 +423,35 @@ input,textarea{font-family:inherit;}
   <div class="app-header">
     <h1>日常</h1>
     <div class="sub">D A I L Y &nbsp; L I F E</div>
+    <div class="header-search-btn" onclick="toggleDailySearch()">🔍</div>
+  </div>
+  <div class="search-bar" id="dailySearchBar">
+    <input type="text" id="dailySearchInput" placeholder="搜索动态内容..." oninput="searchDaily(this.value)">
   </div>
   <div class="add-btn-wrap">
     <button class="btn-add" onclick="openPostModal()">+ 发布动态</button>
   </div>
   <div class="daily-feed" id="dailyFeed"></div>
-  <div id="emptyDaily" class="empty" style="display:none;"><div class="icon">🌸</div><p>还没有动态，记录一下今天吧</p></div>
+  <div id="emptyDaily" class="empty" style="display:none;"><div class="icon">🌳</div><p>还没有动态，记录一下今天吧</p></div>
+</div>
+
+<!-- 个人 -->
+<div class="page" id="pageProfile">
+  <div class="app-header">
+    <h1>我的</h1>
+    <div class="sub">P R O F I L E</div>
+  </div>
+  <div class="profile-wrap">
+    <div class="profile-avatar" id="profileAvatar" onclick="document.getElementById('avatarInput').click()">
+      <span id="avatarPlaceholder">👤</span>
+      <div class="avatar-hint">点击上传</div>
+    </div>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatar(event)">
+    <input type="text" class="profile-name-input" id="profileNameInput" placeholder="昵称" value="Kora">
+    <div class="profile-stats" id="profileStats"></div>
+    <textarea class="profile-bio" id="profileBioInput" placeholder="写一句签名吧..."></textarea>
+    <button class="profile-save-btn" onclick="saveProfile()">保存</button>
+  </div>
 </div>
 
 <!-- 书详情 -->
@@ -380,24 +473,62 @@ input,textarea{font-family:inherit;}
     <canvas id="imgEditorCanvas"></canvas>
   </div>
   <div id="imgEditorToolbar">
-    <div class="pen-color active" style="background:#7ea8a2;" data-color="#7ea8a2"></div>
-    <div class="pen-color" style="background:#d4b896;" data-color="#d4b896"></div>
-    <div class="pen-color" style="background:#b0a0b8;" data-color="#b0a0b8"></div>
-    <div class="pen-color" style="background:#c0a8a0;" data-color="#c0a8a0"></div>
-    <div class="pen-color" style="background:#9eb5c4;" data-color="#9eb5c4"></div>
-    <button class="tool-btn" id="toolEraser" onclick="toggleEraser()">🧽 橡皮擦</button>
-    <button class="tool-btn" onclick="addStickyNote()">🗒 便签</button>
+    <div class="tool-group" id="editorColors">
+      <div class="pen-color active" style="background:#7ea8a2;" data-color="#7ea8a2"></div>
+      <div class="pen-color" style="background:#d4b896;" data-color="#d4b896"></div>
+      <div class="pen-color" style="background:#b0a0b8;" data-color="#b0a0b8"></div>
+      <div class="pen-color" style="background:#c0a8a0;" data-color="#c0a8a0"></div>
+      <div class="pen-color" style="background:#9eb5c4;" data-color="#9eb5c4"></div>
+      <div class="pen-color" style="background:#a0c4e8;" data-color="#a0c4e8"></div>
+      <div class="pen-color" style="background:#333;" data-color="#333"></div>
+      <div class="pen-color" style="background:#fff;border:1px solid #555;" data-color="#fff"></div>
+    </div>
+    <div class="tool-group">
+      <div class="pen-size" data-size="5" onclick="setBrushSize(5,this)"><div class="dot" style="width:5px;height:5px;"></div></div>
+      <div class="pen-size active" data-size="12" onclick="setBrushSize(12,this)"><div class="dot" style="width:12px;height:12px;"></div></div>
+      <div class="pen-size" data-size="25" onclick="setBrushSize(25,this)"><div class="dot" style="width:20px;height:20px;"></div></div>
+    </div>
+    <div class="tool-group">
+      <button class="tool-btn" id="toolHighlighter" onclick="toggleHighlighter()">💡 高亮</button>
+      <button class="tool-btn" id="toolEraser" onclick="toggleEraser()">🧽 橡皮</button>
+    </div>
+    <div class="tool-group" id="editorStickyColors">
+      <div class="sticky-color active" style="background:#fff9c4;" data-color="#fff9c4" onclick="addStickyNote('#fff9c4',this)"></div>
+      <div class="sticky-color" style="background:#c8e6c9;" data-color="#c8e6c9" onclick="addStickyNote('#c8e6c9',this)"></div>
+      <div class="sticky-color" style="background:#ffcdd2;" data-color="#ffcdd2" onclick="addStickyNote('#ffcdd2',this)"></div>
+      <div class="sticky-color" style="background:#bbdefb;" data-color="#bbdefb" onclick="addStickyNote('#bbdefb',this)"></div>
+      <div class="sticky-color" style="background:#e1bee7;" data-color="#e1bee7" onclick="addStickyNote('#e1bee7',this)"></div>
+      <div class="sticky-color" style="background:#fff3e0;" data-color="#fff3e0" onclick="addStickyNote('#fff3e0',this)"></div>
+    </div>
+    <div class="tool-group">
+      <button class="tool-btn" onclick="setStickyFontSize('small',this)" id="stickyFontSmall">A⁻</button>
+      <button class="tool-btn active" onclick="setStickyFontSize('medium',this)" id="stickyFontMedium">A</button>
+      <button class="tool-btn" onclick="setStickyFontSize('large',this)" id="stickyFontLarge">A⁺</button>
+    </div>
+    <div class="tool-group">
+      <button class="tool-btn" onclick="setStickySize('small',this)" id="stickySizeSmall">S</button>
+      <button class="tool-btn active" onclick="setStickySize('medium',this)" id="stickySizeMedium">M</button>
+      <button class="tool-btn" onclick="setStickySize('large',this)" id="stickySizeLarge">L</button>
+    </div>
+    <div class="tool-group">
+      <button class="tool-btn" onclick="editorUndo()">↩️ 撤销</button>
+      <button class="tool-btn" onclick="editorRedo()">↪️ 重做</button>
+      <button class="tool-btn" onclick="editorClear()">🗑 清除</button>
+    </div>
     <div class="tool-spacer"></div>
-    <button class="tool-cancel" onclick="cancelImgEditor()">取消</button>
-    <button class="tool-save" onclick="saveImgEditor()">保存</button>
+    <div class="tool-group">
+      <button class="tool-cancel" onclick="cancelImgEditor()">取消</button>
+      <button class="tool-save" onclick="saveImgEditor()">保存</button>
+    </div>
   </div>
 </div>
 
 <!-- 程序坞 -->
 <div class="dock" id="dock">
   <div class="dock-item active" onclick="switchTab('home')" id="dockHome"><div class="dock-icon">🏡</div><div class="dock-label">主页</div></div>
-  <div class="dock-item" onclick="switchTab('daily')" id="dockDaily"><div class="dock-icon">🌸</div><div class="dock-label">日常</div></div>
+  <div class="dock-item" onclick="switchTab('daily')" id="dockDaily"><div class="dock-icon">🌳</div><div class="dock-label">日常</div></div>
   <div class="dock-item" onclick="switchTab('stats')" id="dockStats"><div class="dock-icon">📊</div><div class="dock-label">统计</div></div>
+  <div class="dock-item" onclick="switchTab('profile')" id="dockProfile"><div class="dock-icon">👤</div><div class="dock-label">我的</div></div>
 </div>
 
 <!-- 添加书弹窗 -->
@@ -415,8 +546,8 @@ input,textarea{font-family:inherit;}
       <div class="color-opt" style="background:#c4d4a8" data-c="#c4d4a8"></div>
       <div class="color-opt" style="background:#c0a8a0" data-c="#c0a8a0"></div>
       <div class="color-opt" style="background:#e8c4c4" data-c="#e8c4c4"></div>
-      <div class="color-opt" style="background:#7ea8a2" data-c="#7ea8a2"></div>
-      <div class="color-opt" style="background:#d4b896" data-c="#d4b896"></div>
+      <div class="color-opt" style="background:#b0a0b8" data-c="#b0a0b8"></div>
+      <div class="color-opt" style="background:#a8d8e0" data-c="#a8d8e0"></div>
       <div class="color-opt" style="background:#1a1a1a" data-c="#1a1a1a"></div>
       <div class="color-opt" style="background:#e8645a" data-c="#e8645a"></div>
       <div class="color-opt" style="background:#5a8ae8" data-c="#5a8ae8"></div>
@@ -466,10 +597,14 @@ input,textarea{font-family:inherit;}
     <h2>发布动态</h2>
     <label>说点什么</label>
     <textarea class="quote-input" id="postTextInput" placeholder="记录此刻的心情..." style="min-height:80px;"></textarea>
-    <label>图片（最多9张）</label>
+    <label>图片/视频（最多9张图+1个视频）</label>
     <div class="img-upload" onclick="document.getElementById('postImgInput').click()"><div class="icon">📁</div><p>点击选择图片</p></div>
     <input type="file" id="postImgInput" accept="image/*" multiple style="display:none" onchange="handlePostImgs(event)">
     <div class="post-img-thumbs" id="postThumbs"></div>
+    <label>视频（可选，仅1个）</label>
+    <div class="img-upload" onclick="document.getElementById('postVideoInput').click()"><div class="icon">🎬</div><p>点击选择视频</p></div>
+    <input type="file" id="postVideoInput" accept="video/*" style="display:none" onchange="handlePostVideo(event)">
+    <div class="post-img-thumbs" id="postVideoThumbs"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal('postModal')">取消</button>
       <button class="btn-save" onclick="savePost()">发布</button>
@@ -479,7 +614,9 @@ input,textarea{font-family:inherit;}
 
 <script>
 const KEY='miracle_data_v3';
-let data=JSON.parse(localStorage.getItem(KEY)||'{"books":[]}');
+let data=JSON.parse(localStorage.getItem(KEY)||'{"books":[],"posts":[],"profile":{"name":"Kora","bio":"","avatar":""}}');
+if(!data.profile)data.profile={name:"Kora",bio:"",avatar:""};
+if(!data.posts)data.posts=[];
 let currentBookId=null,selColor='#7ea8a2',coverImg=null,noteImg=null;
 
 function save(){localStorage.setItem(KEY,JSON.stringify(data));}
@@ -501,8 +638,73 @@ function switchTab(tab){
   if(tab==='home'){document.getElementById('pageHome').classList.add('active');document.getElementById('dockHome').classList.add('active');renderHome();}
   else if(tab==='stats'){document.getElementById('pageStats').classList.add('active');document.getElementById('dockStats').classList.add('active');renderStats();}
   else if(tab==='daily'){document.getElementById('pageDaily').classList.add('active');document.getElementById('dockDaily').classList.add('active');renderDaily();}
+  else if(tab==='profile'){document.getElementById('pageProfile').classList.add('active');document.getElementById('dockProfile').classList.add('active');renderProfile();}
 }
 function goHome(){switchTab('home');}
+
+// ===== Search =====
+function toggleHomeSearch(){
+  const bar=document.getElementById('homeSearchBar');
+  bar.classList.toggle('active');
+  if(bar.classList.contains('active')){
+    setTimeout(()=>document.getElementById('homeSearchInput').focus(),100);
+  }else{
+    document.getElementById('homeSearchInput').value='';
+    searchHome('');
+  }
+}
+function toggleDailySearch(){
+  const bar=document.getElementById('dailySearchBar');
+  bar.classList.toggle('active');
+  if(bar.classList.contains('active')){
+    setTimeout(()=>document.getElementById('dailySearchInput').focus(),100);
+  }else{
+    document.getElementById('dailySearchInput').value='';
+    searchDaily('');
+  }
+}
+function searchHome(query){
+  query=(query||'').toLowerCase().trim();
+  const list=document.getElementById('bookList');
+  if(!query){renderHome();return;}
+  const filtered=data.books.filter(b=>{
+    const title=(b.title||'').toLowerCase();
+    const author=(b.author||'').toLowerCase();
+    const tags=(b.tags||[]).join(' ').toLowerCase();
+    return title.includes(query)||author.includes(query)||tags.includes(query);
+  });
+  if(filtered.length===0){
+    list.innerHTML='<div class="empty" style="padding:40px;"><div class="icon">🔍</div><p>没找到相关的书</p></div>';
+    return;
+  }
+  list.innerHTML=filtered.map(b=>{
+    const tags=(b.tags||[]).slice(0,3);
+    return `<div class="book-row" data-book-id="${b.id}" onclick="openBook('${b.id}')">
+      ${b.coverImg?`<img class="cover" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
+      <div class="info">
+        <div class="b-title">《${esc(b.title)}》</div>
+        <div class="b-meta">${(b.notes||[]).length} 条笔记${b.author?' · '+esc(b.author):''}</div>
+        ${tags.length?`<div class="b-tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
+      </div><div class="arrow">›</div></div>`;
+  }).join('');
+}
+function searchDaily(query){
+  query=(query||'').toLowerCase().trim();
+  renderDaily(query);
+}
+
+// ===== Stats Sub-tabs =====
+function switchStatsTab(section){
+  document.querySelectorAll('.stats-sub-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.stats-section').forEach(s=>s.classList.remove('active'));
+  if(section==='reading'){
+    document.querySelector('.stats-sub-tab').classList.add('active');
+    document.getElementById('statsReading').classList.add('active');
+  }else{
+    document.querySelectorAll('.stats-sub-tab')[1].classList.add('active');
+    document.getElementById('statsDaily').classList.add('active');
+  }
+}
 
 function renderHome(){
   const list=document.getElementById('bookList'),empty=document.getElementById('emptyHome');
@@ -518,7 +720,6 @@ function renderHome(){
         ${tags.length?`<div class="b-tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
       </div><div class="arrow">›</div></div>`;
   }).join('');
-  // 绑定长按
   list.querySelectorAll('.book-row').forEach(row=>{
     let pressTimer=null;
     row.addEventListener('touchstart',function(e){
@@ -558,7 +759,6 @@ function editBook(){
   const b=data.books.find(x=>x.id===pressBookId);
   if(!b)return;
   closePressMenu();
-  // 复用添加书弹窗，改为编辑模式
   document.getElementById('bookModal').classList.add('active');
   document.getElementById('inputTitle').value=b.title||'';
   document.getElementById('inputAuthor').value=b.author||'';
@@ -569,22 +769,26 @@ function editBook(){
   const co=document.querySelector(`.color-opt[data-c="${selColor}"]`);if(co)co.classList.add('selected');
   if(coverImg){const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');}
   else{document.getElementById('coverPrev').classList.remove('show');}
-  // 标记为编辑模式
   document.getElementById('bookModal').dataset.editId=pressBookId;
   document.querySelector('#bookModal h2').textContent='修改书';
 }
 
+// ===== Stats Rendering =====
 function renderStats(){
-  const wrap=document.getElementById('statsWrap');
+  renderReadingStats();
+  renderDailyStats();
+}
+
+function renderReadingStats(){
+  const wrap=document.getElementById('statsReading');
   const totalBooks=data.books.length;
   const totalNotes=data.books.reduce((s,b)=>s+(b.notes||[]).length,0);
   const totalImg=data.books.reduce((s,b)=>s+(b.notes||[]).filter(n=>n.image).length,0);
   const genres=getGenres();
   const sorted=Object.entries(genres).sort((a,b)=>b[1]-a[1]);
   const maxCount=Math.max(...sorted.map(x=>x[1]),1);
-  const palette=['#7ea8a2','#9eb5c4','#d4b896','#c4d4a8','#c0a8a0','#e8c4c4','#7ea8a2','#b0a0b8','#a8d8e0','#e0a8c8','#c0c0e0','#bbb'];
+  const palette=['#7ea8a2','#9eb5c4','#d4b896','#c4d4a8','#c0a8a0','#e8c4c4','#b0a0b8','#a8d8e0','#e0a8c8','#c0c0e0','#bbb'];
 
-  // 饼图
   const pieData=sorted.map(([g,c],i)=>({name:g,value:c,color:palette[i%palette.length]}));
   const pieTotal=pieData.reduce((s,d)=>s+d.value,0);
   let acc=0;const pcx=70,pcy=70,pr=60;
@@ -597,11 +801,9 @@ function renderStats(){
     return pieTotal===1?`<circle cx="${pcx}" cy="${pcy}" r="${pr}" fill="${d.color}"/>`:`<path d="M${pcx},${pcy} L${x1},${y1} A${pr},${pr} 0 ${la} 1 ${x2},${y2} Z" fill="${d.color}" stroke="#fff" stroke-width="1.5"/>`;
   }).join(''):'';
 
-  // 柱状图
   const bookStats=data.books.map(b=>({title:b.title,count:(b.notes||[]).length,color:b.color||'#7ea8a2'})).sort((a,b)=>b.count-a.count).slice(0,8);
   const maxBar=Math.max(...bookStats.map(b=>b.count),1);
 
-  // 月度趋势
   const now=new Date();const months=[];
   for(let i=5;i>=0;i--){const dt=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:dt.getFullYear()+'-'+dt.getMonth(),label:(dt.getMonth()+1)+'月'});}
   const mc=months.map(m=>{let c=0;data.books.forEach(b=>(b.notes||[]).forEach(n=>{const nd=new Date(n.date);if(nd.getFullYear()+'-'+nd.getMonth()===m.key)c++;}));return c;});
@@ -638,6 +840,125 @@ function renderStats(){
     </div>
     ${totalBooks===0?'<div class="empty" style="padding:40px;"><div class="icon">📊</div><p>还没有数据</p></div>':''}
   `;
+}
+
+function renderDailyStats(){
+  const wrap=document.getElementById('statsDaily');
+  const posts=data.posts||[];
+  const totalPosts=posts.length;
+  const now=new Date();
+  const thisMonth=posts.filter(p=>{const d=new Date(p.date);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();}).length;
+  const weekAgo=Date.now()-7*86400000;
+  const thisWeek=posts.filter(p=>new Date(p.date).getTime()>=weekAgo).length;
+  const weeksSinceFirst=posts.length>0?Math.max(1,Math.ceil((Date.now()-new Date(posts[posts.length-1].date).getTime())/(7*86400000))):1;
+  const avgPerWeek=(totalPosts/weeksSinceFirst).toFixed(1);
+
+  // Day of week analysis
+  const dayNames=['周日','周一','周二','周三','周四','周五','周六'];
+  const dayCounts=[0,0,0,0,0,0,0]; // Sun=0, Mon=1...
+  posts.forEach(p=>{const d=new Date(p.date);dayCounts[d.getDay()]++;});
+  // Reorder Mon-Sun
+  const monFirst=[dayCounts[1],dayCounts[2],dayCounts[3],dayCounts[4],dayCounts[5],dayCounts[6],dayCounts[0]];
+  const monNames=['周一','周二','周三','周四','周五','周六','周日'];
+  const maxDay=Math.max(...monFirst,1);
+  const mostActiveIdx=monFirst.indexOf(Math.max(...monFirst));
+  const mostActiveDay=totalPosts>0?monNames[mostActiveIdx]:'—';
+  const dayColors=['#7ea8a2','#9eb5c4','#d4b896','#c4d4a8','#c0a8a0','#e8c4c4','#b0a0b8'];
+
+  // 30-day heatmap
+  const heatmapCells=[];
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-29);
+  for(let i=0;i<30;i++){
+    const d=new Date(start);d.setDate(start.getDate()+i);
+    const dStr=d.toISOString().slice(0,10);
+    const count=posts.filter(p=>p.date.slice(0,10)===dStr).length;
+    let cls='';
+    if(count>=4)cls='hm-4';
+    else if(count>=3)cls='hm-3';
+    else if(count>=2)cls='hm-2';
+    else if(count>=1)cls='hm-1';
+    heatmapCells.push(`<div class="heatmap-cell ${cls}" title="${dStr}: ${count}条">${count||''}</div>`);
+  }
+
+  wrap.innerHTML=`
+    <div class="stat-overview">
+      <div class="stat-box"><div class="num">${totalPosts}</div><div class="lbl">动态 / 总</div></div>
+      <div class="stat-box"><div class="num">${thisMonth}</div><div class="lbl">本月 / 条</div></div>
+      <div class="stat-box"><div class="num">${thisWeek}</div><div class="lbl">本周 / 条</div></div>
+      <div class="stat-box"><div class="num">${avgPerWeek}</div><div class="lbl">周均 / 条</div></div>
+    </div>
+    <div class="chart-card">
+      <h3>📅 星期活跃度</h3>
+      <div class="bar-chart">
+        ${monFirst.map((c,i)=>`<div class="bar-col"><div class="bar-count">${c}</div><div class="bar" style="height:${c/maxDay*95}px;background:linear-gradient(180deg,${dayColors[i]},${dayColors[i]}cc);"></div><div class="bar-label">${monNames[i]}</div></div>`).join('')}
+      </div>
+      <div style="text-align:center;margin-top:14px;font-size:0.76rem;color:var(--text-mid);">最活跃：<b style="color:var(--accent)">${mostActiveDay}</b></div>
+    </div>
+    <div class="chart-card">
+      <h3>🔥 近 30 天热力图</h3>
+      <div class="heatmap-grid">${heatmapCells.join('')}</div>
+      <div class="heatmap-labels"><span>30天前</span><span>今天</span></div>
+    </div>
+    ${totalPosts===0?'<div class="empty" style="padding:40px;"><div class="icon">📊</div><p>还没有日常数据</p></div>':''}
+  `;
+}
+
+// ===== Profile =====
+function renderProfile(){
+  const p=data.profile||{name:'Kora',bio:'',avatar:''};
+  const avatarEl=document.getElementById('profileAvatar');
+  const placeholder=document.getElementById('avatarPlaceholder');
+  if(p.avatar){
+    avatarEl.innerHTML=`<img src="${p.avatar}"><div class="avatar-hint">点击更换</div>`;
+  }else{
+    avatarEl.innerHTML=`<span>👤</span><div class="avatar-hint">点击上传</div>`;
+  }
+  document.getElementById('profileNameInput').value=p.name||'Kora';
+  document.getElementById('profileBioInput').value=p.bio||'';
+  // Stats
+  const totalBooks=data.books.length;
+  const totalNotes=data.books.reduce((s,b)=>s+(b.notes||[]).length,0);
+  const totalPosts=(data.posts||[]).length;
+  document.getElementById('profileStats').innerHTML=`
+    <div class="profile-stat"><div class="ps-num">${totalBooks}</div><div class="ps-lbl">书籍</div></div>
+    <div class="profile-stat"><div class="ps-num">${totalNotes}</div><div class="ps-lbl">摘录</div></div>
+    <div class="profile-stat"><div class="ps-num">${totalPosts}</div><div class="ps-lbl">动态</div></div>
+  `;
+}
+function handleAvatar(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');
+      const sz=200;
+      c.width=sz;c.height=sz;
+      const ctx=c.getContext('2d');
+      const iw=img.width,ih=img.height;
+      const s=Math.min(iw,ih);
+      ctx.drawImage(img,(iw-s)/2,(ih-s)/2,s,s,0,0,sz,sz);
+      const avatarUrl=c.toDataURL('image/jpeg',0.8);
+      data.profile.avatar=avatarUrl;
+      save();
+      renderProfile();
+    };
+    img.src=ev.target.result;
+  };
+  r.readAsDataURL(f);
+}
+function saveProfile(){
+  data.profile=data.profile||{};
+  data.profile.name=document.getElementById('profileNameInput').value.trim()||'Kora';
+  data.profile.bio=document.getElementById('profileBioInput').value.trim();
+  save();
+  // Toast
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:10px 24px;border-radius:20px;font-size:0.82rem;z-index:9999;';
+  toast.textContent='已保存 ✓';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),1500);
 }
 
 function openBook(id){
@@ -699,11 +1020,11 @@ document.getElementById('customColor').addEventListener('input',function(){
   this.parentElement.querySelector('.plus').style.color='#fff';
 });
 
+// ===== Flood-fill Background Removal =====
 function removeBackground(imgData){
-  // Step 1: Draw to canvas (scaled to max 500px wide)
   const tmpC=document.createElement('canvas');
   let ow=imgData.naturalWidth||imgData.width,oh=imgData.naturalHeight||imgData.height;
-  const mx=500;
+  const mx=600;
   let w=ow,h=oh;
   if(w>mx){h=Math.round(h*mx/w);w=mx;}
   tmpC.width=w;tmpC.height=h;
@@ -712,51 +1033,101 @@ function removeBackground(imgData){
   const id=tmpCtx.getImageData(0,0,w,h);
   const d=id.data;
 
-  // Step 2: Sample background color from 4 corners
-  const corners=[0,(w-1)*4,(h-1)*w*4,(h-1)*w*4+(w-1)*4];
+  // Step 1: Sample corner colors as background reference
+  const samplePoints=[
+    [0,0],[w-1,0],[0,h-1],[w-1,h-1],
+    [1,1],[w-2,1],[1,h-2],[w-2,h-2],
+    [Math.floor(w/2),0],[Math.floor(w/2),h-1],
+    [0,Math.floor(h/2)],[w-1,Math.floor(h/2)]
+  ];
   let br=0,bg=0,bb=0;
-  corners.forEach(ci=>{br+=d[ci];bg+=d[ci+1];bb+=d[ci+2];});
-  br/=4;bg/=4;bb/=4;
-  const th=50;
+  samplePoints.forEach(([x,y])=>{
+    const i=(y*w+x)*4;
+    br+=d[i];bg+=d[i+1];bb+=d[i+2];
+  });
+  const sc=samplePoints.length;
+  br/=sc;bg/=sc;bb/=sc;
 
-  // Helper: is pixel background?
-  function isBg(r,g,b){return Math.sqrt((r-br)**2+(g-bg)**2+(b-bb)**2)<th;}
+  // Step 2: Flood-fill from all 4 edges
+  const tolerance=50;
+  const visited=new Uint8Array(w*h);
+  const queue=[];
+  const isBgColor=(idx)=>{
+    const dr=d[idx]-br,dg=d[idx+1]-bg,db=d[idx+2]-bb;
+    return Math.sqrt(dr*dr+dg*dg+db*db)<tolerance;
+  };
 
-  // Step 3: Detect book cover bounding box by scanning from edges
-  // Find first/last non-bg rows
-  let top=0,bottom=h-1,left=0,right=w-1;
-  // Scan rows from top
-  for(let y=0;y<h;y++){let found=false;for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){top=y;break;}}
-  // Scan rows from bottom
-  for(let y=h-1;y>=0;y--){let found=false;for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){bottom=y;break;}}
-  // Scan columns from left
-  for(let x=0;x<w;x++){let found=false;for(let y=0;y<h;y++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){left=x;break;}}
-  // Scan columns from right
-  for(let x=w-1;x>=0;x--){let found=false;for(let y=0;y<h;y++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){right=x;break;}}
-
-  // Add small padding
-  const pad=3;
-  top=Math.max(0,top-pad);left=Math.max(0,left-pad);
-  bottom=Math.min(h-1,bottom+pad);right=Math.min(w-1,right+pad);
-
-  // Step 4: Crop to detected region
-  const cw=right-left+1,ch=bottom-top+1;
-  const c=document.createElement('canvas');
-  c.width=cw;c.height=ch;
-  const ctx=c.getContext('2d');
-  const cImg=ctx.createImageData(cw,ch);
-  for(let y=0;y<ch;y++){for(let x=0;x<cw;x++){const si=((top+y)*w+(left+x))*4;const di=(y*cw+x)*4;cImg.data[di]=d[si];cImg.data[di+1]=d[si+1];cImg.data[di+2]=d[si+2];cImg.data[di+3]=d[si+3];}}
-
-  // Step 5: Remove remaining bg pixels on cropped image (with feathering)
-  const cd2=cImg.data;
-  const th2=45;
-  for(let i=0;i<cd2.length;i+=4){
-    const diff=Math.sqrt((cd2[i]-br)**2+(cd2[i+1]-bg)**2+(cd2[i+2]-bb)**2);
-    if(diff<th2){cd2[i+3]=0;}
-    else if(diff<th2+30){cd2[i+3]=Math.round((diff-th2)/30*255);}
+  // Seed from all border pixels
+  // Top and bottom rows
+  for(let x=0;x<w;x++){
+    const ti=x,bi=(h-1)*w+x;
+    if(isBgColor(ti*4)&&!visited[ti]){visited[ti]=1;queue.push(ti);}
+    if(isBgColor(bi*4)&&!visited[bi]){visited[bi]=1;queue.push(bi);}
   }
-  ctx.putImageData(cImg,0,0);
-  return c.toDataURL('image/png');
+  // Left and right columns
+  for(let y=0;y<h;y++){
+    const li=y*w,ri=y*w+w-1;
+    if(isBgColor(li*4)&&!visited[li]){visited[li]=1;queue.push(li);}
+    if(isBgColor(ri*4)&&!visited[ri]){visited[ri]=1;queue.push(ri);}
+  }
+
+  // BFS flood fill
+  while(queue.length>0){
+    const idx=queue.shift();
+    const x=idx%w,y=Math.floor(idx/w);
+    // Check neighbors
+    const neighbors=[];
+    if(x>0)neighbors.push(idx-1);
+    if(x<w-1)neighbors.push(idx+1);
+    if(y>0)neighbors.push(idx-w);
+    if(y<h-1)neighbors.push(idx+w);
+    for(const ni of neighbors){
+      if(!visited[ni]&&isBgColor(ni*4)){
+        visited[ni]=1;
+        queue.push(ni);
+      }
+    }
+  }
+
+  // Step 3: Mark non-visited pixels as foreground
+  // Background = visited, Foreground = not visited
+  // Step 4: Soft alpha feathering at boundaries (3px)
+  for(let i=0;i<w*h;i++){
+    if(visited[i]){
+      d[i*4+3]=0; // Full transparent for background
+    }
+  }
+
+  // Feather: find boundary foreground pixels and give partial alpha
+  const featherRadius=3;
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const idx=y*w+x;
+      if(!visited[idx]){
+        // Check if near a background pixel
+        let minDist=featherRadius+1;
+        for(let dy=-featherRadius;dy<=featherRadius;dy++){
+          for(let dx=-featherRadius;dx<=featherRadius;dx++){
+            const nx=x+dx,ny=y+dy;
+            if(nx>=0&&nx<w&&ny>=0&&ny<h){
+              if(visited[ny*w+nx]){
+                const dist=Math.sqrt(dx*dx+dy*dy);
+                if(dist<minDist)minDist=dist;
+              }
+            }
+          }
+        }
+        if(minDist<=featherRadius){
+          // Near boundary — apply partial alpha
+          const alpha=Math.round((minDist/featherRadius)*255);
+          if(alpha<d[idx*4+3])d[idx*4+3]=alpha;
+        }
+      }
+    }
+  }
+
+  tmpCtx.putImageData(id,0,0);
+  return tmpC.toDataURL('image/png');
 }
 
 function handleCover(e){
@@ -765,14 +1136,12 @@ function handleCover(e){
   r.onload=ev=>{
     const img=new Image();
     img.onload=()=>{
-      // 显示“抠图中”
       document.getElementById('coverPrev').classList.remove('show');
       const loading=document.createElement('div');
       loading.className='cutout-loading show';
       loading.id='cutoutLoading';
       loading.innerHTML='<span class="spinner"></span>正在抠图...';
       document.querySelector('#bookModal .img-upload').after(loading);
-      // 异步处理
       setTimeout(()=>{
         coverImg=removeBackground(img);
         const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
@@ -790,7 +1159,6 @@ function saveBook(){
   const tags=tagsStr?tagsStr.split(/[,，、]/).map(t=>t.trim()).filter(Boolean):[];
   const editId=document.getElementById('bookModal').dataset.editId;
   if(editId){
-    // 编辑模式
     const b=data.books.find(x=>x.id===editId);if(b){
       b.title=title;b.author=author;b.tags=tags;b.color=selColor;b.coverImg=coverImg;b.genre=guessGenre(tags,title);
     }
@@ -806,7 +1174,6 @@ function saveNote(){
   const modal=document.getElementById('noteModal');
   const editIdx=modal.dataset.editIdx;
   if(editIdx!==undefined&&editIdx!==''){
-    // Edit mode
     const editBid=modal.dataset.editBookId||currentBookId;
     const b=data.books.find(x=>x.id===editBid);if(!b)return;
     b.notes=b.notes||[];
@@ -864,13 +1231,19 @@ if('serviceWorker' in navigator){
   });
 }
 
-// ===== Image Editor =====
+// ===== Image Editor (Upgraded) =====
 let imgEditorCtx=null,imgEditorCanvas=null,editorImg=null;
 let editorDrawLayer=null,editorDrawCtx=null;
 let editorScale=1,editorOffsetX=0,editorOffsetY=0;
 let editorStickyNotes=[];
 let editorDrawing=false,editorLastX=0,editorLastY=0;
 let editorTool='pen',editorColor='#7ea8a2',editorEraser=false;
+let editorBrushSize=12,editorHighlighter=false;
+let editorStickyFontSize='medium'; // small/medium/large
+let editorStickySize='medium'; // small/medium/large
+let editorStickyColor='#fff9c4';
+// Undo/Redo
+let editorHistory=[],editorHistoryIdx=-1;
 
 function openImgEditor(){
   if(!noteImg)return;
@@ -896,22 +1269,60 @@ function initEditorCanvas(){
   imgEditorCanvas.height=ih;
   imgEditorCanvas.style.width=cw+'px';
   imgEditorCanvas.style.height=ch+'px';
-  // Draw base image
+
   imgEditorCtx.drawImage(editorImg,0,0,iw,ih);
-  // Create draw layer
   editorDrawLayer=document.createElement('canvas');
   editorDrawLayer.width=iw;
   editorDrawLayer.height=ih;
   editorDrawCtx=editorDrawLayer.getContext('2d');
-  // Reset sticky notes
   editorStickyNotes=[];
   document.querySelectorAll('.sticky-note-el').forEach(e=>e.remove());
-  editorTool='pen';editorEraser=false;editorColor='#7ea8a2';
+  editorTool='pen';editorEraser=false;editorHighlighter=false;editorColor='#7ea8a2';editorBrushSize=12;
+  editorHistory=[];editorHistoryIdx=-1;
+  saveEditorHistory();
   // Reset toolbar
   document.querySelectorAll('#imgEditorToolbar .pen-color').forEach((e,i)=>e.classList.toggle('active',i===0));
+  document.querySelectorAll('#imgEditorToolbar .pen-size').forEach(e=>e.classList.toggle('active',e.dataset.size=='12'));
   document.getElementById('toolEraser').classList.remove('active');
-  // Bind events
+  document.getElementById('toolHighlighter').classList.remove('active');
   bindCanvasEvents();
+}
+
+function saveEditorHistory(){
+  // Truncate any redo states
+  editorHistory=editorHistory.slice(0,editorHistoryIdx+1);
+  // Save draw layer state
+  const snap=document.createElement('canvas');
+  snap.width=editorDrawLayer.width;snap.height=editorDrawLayer.height;
+  snap.getContext('2d').drawImage(editorDrawLayer,0,0);
+  editorHistory.push({drawLayer:snap});
+  editorHistoryIdx=editorHistory.length-1;
+  // Cap history
+  if(editorHistory.length>30){editorHistory.shift();editorHistoryIdx--;}
+}
+
+function editorUndo(){
+  if(editorHistoryIdx<=0)return;
+  editorHistoryIdx--;
+  const snap=editorHistory[editorHistoryIdx];
+  editorDrawCtx.clearRect(0,0,editorDrawLayer.width,editorDrawLayer.height);
+  editorDrawCtx.drawImage(snap.drawLayer,0,0);
+  renderEditorComposite();
+}
+function editorRedo(){
+  if(editorHistoryIdx>=editorHistory.length-1)return;
+  editorHistoryIdx++;
+  const snap=editorHistory[editorHistoryIdx];
+  editorDrawCtx.clearRect(0,0,editorDrawLayer.width,editorDrawLayer.height);
+  editorDrawCtx.drawImage(snap.drawLayer,0,0);
+  renderEditorComposite();
+}
+function editorClear(){
+  editorDrawCtx.clearRect(0,0,editorDrawLayer.width,editorDrawLayer.height);
+  document.querySelectorAll('.sticky-note-el').forEach(e=>e.remove());
+  editorStickyNotes=[];
+  saveEditorHistory();
+  renderEditorComposite();
 }
 
 function bindCanvasEvents(){
@@ -930,7 +1341,6 @@ function getCanvasPos(e){
 }
 
 function editorPointerDown(e){
-  if(editorTool==='sticky')return;
   e.preventDefault();
   editorDrawing=true;
   const p=getCanvasPos(e);
@@ -954,9 +1364,9 @@ function editorPointerMove(e){
     editorDrawCtx.restore();
   }else{
     editorDrawCtx.save();
-    editorDrawCtx.globalAlpha=0.35;
+    editorDrawCtx.globalAlpha=editorHighlighter?0.3:1.0;
     editorDrawCtx.strokeStyle=editorColor;
-    editorDrawCtx.lineWidth=20;
+    editorDrawCtx.lineWidth=editorHighlighter?editorBrushSize*1.5:editorBrushSize;
     editorDrawCtx.lineCap='round';
     editorDrawCtx.lineJoin='round';
     editorDrawCtx.beginPath();
@@ -969,7 +1379,10 @@ function editorPointerMove(e){
   renderEditorComposite();
 }
 function editorPointerUp(e){
-  if(editorDrawing){editorDrawing=false;}
+  if(editorDrawing){
+    editorDrawing=false;
+    saveEditorHistory();
+  }
   renderEditorComposite();
 }
 
@@ -983,10 +1396,26 @@ function toggleEraser(){
   editorEraser=!editorEraser;
   document.getElementById('toolEraser').classList.toggle('active',editorEraser);
   if(editorEraser){
+    editorHighlighter=false;
+    document.getElementById('toolHighlighter').classList.remove('active');
     document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(e=>e.classList.remove('active'));
   }else{
     document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(e=>{e.classList.toggle('active',e.dataset.color===editorColor);});
   }
+}
+function toggleHighlighter(){
+  editorHighlighter=!editorHighlighter;
+  document.getElementById('toolHighlighter').classList.toggle('active',editorHighlighter);
+  if(editorHighlighter){
+    editorEraser=false;
+    document.getElementById('toolEraser').classList.remove('active');
+    document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(e=>{e.classList.toggle('active',e.dataset.color===editorColor);});
+  }
+}
+function setBrushSize(sz,el){
+  editorBrushSize=sz;
+  document.querySelectorAll('#imgEditorToolbar .pen-size').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
 }
 
 // Pen color selection
@@ -1000,33 +1429,93 @@ document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(el=>{
   });
 });
 
+// Sticky note font size
+function setStickyFontSize(sz,el){
+  editorStickyFontSize=sz;
+  document.querySelectorAll('#stickyFontSmall,#stickyFontMedium,#stickyFontLarge').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+function setStickySize(sz,el){
+  editorStickySize=sz;
+  document.querySelectorAll('#stickySizeSmall,#stickySizeMedium,#stickySizeLarge').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+function getStickyFontSizePx(){
+  if(editorStickyFontSize==='small')return 12;
+  if(editorStickyFontSize==='large')return 20;
+  return 16;
+}
+function getStickySizePx(){
+  if(editorStickySize==='small')return 80;
+  if(editorStickySize==='large')return 120;
+  return 100;
+}
+
 // Sticky notes
-function addStickyNote(){
+function addStickyNote(color,el){
+  if(el){
+    editorStickyColor=color;
+    document.querySelectorAll('#editorStickyColors .sticky-color').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');
+  }
   const wrap=document.getElementById('imgEditorCanvas-wrap');
   const rect=imgEditorCanvas.getBoundingClientRect();
   const wrapRect=wrap.getBoundingClientRect();
   const note=document.createElement('div');
   note.className='sticky-note-el';
-  const sx=rect.left-wrapRect.left+rect.width/2-30;
+  const sz=getStickySizePx();
+  note.style.background=color;
+  note.style.width=sz+'px';
+  note.style.height=sz+'px';
+  note.style.fontSize=getStickyFontSizePx()+'px';
+  const sx=rect.left-wrapRect.left+rect.width/2-sz/2;
   const sy=rect.top-wrapRect.top+rect.height/3;
   note.style.left=sx+'px';
   note.style.top=sy+'px';
-  const ta=document.createElement('textarea');
-  ta.placeholder='输入...';
-  ta.rows=2;
-  note.appendChild(ta);
+  // Text element
+  const textEl=document.createElement('div');
+  textEl.className='sticky-text';
+  textEl.textContent='便签';
+  note.appendChild(textEl);
+  // Delete button
   const delBtn=document.createElement('div');
   delBtn.className='sticky-del';
   delBtn.textContent='×';
   delBtn.onclick=function(ev){ev.stopPropagation();note.remove();};
   note.appendChild(delBtn);
+  // Double-tap to edit
+  let lastTap=0;
+  note.addEventListener('click',function(e){
+    if(e.target===delBtn||e.target.tagName==='TEXTAREA')return;
+    const now=Date.now();
+    if(now-lastTap<350){
+      // Double tap — edit
+      const ta=document.createElement('textarea');
+      ta.value=textEl.textContent;
+      ta.style.fontSize=note.style.fontSize;
+      textEl.style.display='none';
+      note.insertBefore(ta,textEl);
+      ta.focus();
+      ta.select();
+      ta.addEventListener('blur',function(){
+        textEl.textContent=ta.value;
+        note.removeChild(ta);
+        textEl.style.display='';
+      });
+      ta.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ta.blur();}});
+    }
+    lastTap=now;
+  });
+  // Drag
   let dragSX=0,dragSY=0,dragOX=0,dragOY=0,dragging=false;
   note.addEventListener('pointerdown',function(e){
-    if(e.target.tagName==='TEXTAREA')return;
+    if(e.target===delBtn||e.target.tagName==='TEXTAREA')return;
     dragging=true;
     dragSX=e.clientX;dragSY=e.clientY;
     dragOX=parseFloat(note.style.left);dragOY=parseFloat(note.style.top);
     note.setPointerCapture(e.pointerId);
+    e.stopPropagation();
   });
   note.addEventListener('pointermove',function(e){
     if(!dragging)return;
@@ -1036,7 +1525,6 @@ function addStickyNote(){
   note.addEventListener('pointerup',function(e){dragging=false;});
   note.addEventListener('pointercancel',function(e){dragging=false;});
   wrap.appendChild(note);
-  setTimeout(()=>ta.focus(),50);
 }
 
 function cancelImgEditor(){
@@ -1060,24 +1548,61 @@ function saveImgEditor(){
     const cy=(elRect.top-canvasRect.top)*scaleY;
     const cw=elRect.width*scaleX;
     const ch=elRect.height*scaleY;
+    const bg=getComputedStyle(el).backgroundColor;
+    const fontSize=parseFloat(getComputedStyle(el).fontSize)*scaleX;
     fctx.save();
     fctx.translate(cx+cw/2,cy+ch/2);
     fctx.rotate(-0.035);
-    fctx.fillStyle='#fff9c4';
+    fctx.fillStyle=bg||'#fff9c4';
     fctx.shadowColor='rgba(0,0,0,0.3)';
     fctx.shadowBlur=8;
-    fctx.fillRect(-cw/2,-ch/2,cw,ch);
+    // Rounded rect
+    const r=8*scaleX;
+    fctx.beginPath();
+    fctx.moveTo(-cw/2+r,-ch/2);
+    fctx.lineTo(cw/2-r,-ch/2);
+    fctx.quadraticCurveTo(cw/2,-ch/2,cw/2,-ch/2+r);
+    fctx.lineTo(cw/2,ch/2-r);
+    fctx.quadraticCurveTo(cw/2,ch/2,cw/2-r,ch/2);
+    fctx.lineTo(-cw/2+r,ch/2);
+    fctx.quadraticCurveTo(-cw/2,ch/2,-cw/2,ch/2-r);
+    fctx.lineTo(-cw/2,-ch/2+r);
+    fctx.quadraticCurveTo(-cw/2,-ch/2,-cw/2+r,-ch/2);
+    fctx.closePath();
+    fctx.fill();
     fctx.shadowBlur=0;
+    // Get text
+    const textEl=el.querySelector('.sticky-text');
     const ta=el.querySelector('textarea');
-    const text=ta?ta.value:'';
+    const text=ta?ta.value:(textEl?textEl.textContent:'');
     if(text){
       fctx.fillStyle='#5a4a2a';
-      fctx.font=Math.round(10*scaleX)+'px sans-serif';
-      fctx.textAlign='left';
-      fctx.textBaseline='top';
-      const lines=text.split('\n');
+      fctx.font=Math.round(fontSize)+'px sans-serif';
+      fctx.textAlign='center';
+      fctx.textBaseline='middle';
+      // Word wrap
+      const maxWidth=cw*0.85;
+      const lines=[];
+      const paragraphs=text.split('\n');
+      paragraphs.forEach(para=>{
+        if(para===''){lines.push('');return;}
+        const words=para.split('');
+        let line='';
+        for(const ch of words){
+          const testLine=line+ch;
+          if(fctx.measureText(testLine).width>maxWidth&&line){
+            lines.push(line);
+            line=ch;
+          }else{
+            line=testLine;
+          }
+        }
+        lines.push(line);
+      });
+      const lineH=fontSize*1.4;
+      const startY=-((lines.length-1)/2)*lineH;
       lines.forEach((line,i)=>{
-        fctx.fillText(line,-cw/2+6*scaleX,-ch/2+6*scaleY+i*14*scaleX);
+        fctx.fillText(line,0,startY+i*lineH);
       });
     }
     fctx.restore();
@@ -1089,13 +1614,17 @@ function saveImgEditor(){
 }
 
 // ===== 日常功能 =====
-let postImgs=[];
-function openPostModal(){
+let postImgs=[],postVideo=null;
+function openPostModal(mode){
   document.getElementById('postModal').classList.add('active');
   document.getElementById('postTextInput').value='';
   document.getElementById('postImgInput').value='';
+  document.getElementById('postVideoInput').value='';
   document.getElementById('postThumbs').innerHTML='';
-  postImgs=[];
+  document.getElementById('postVideoThumbs').innerHTML='';
+  postImgs=[];postVideo=null;
+  document.querySelector('#postModal h2').textContent='发布动态';
+  delete document.getElementById('postModal').dataset.editId;
 }
 function handlePostImgs(e){
   const files=Array.from(e.target.files||[]);
@@ -1117,17 +1646,46 @@ function handlePostImgs(e){
     r.readAsDataURL(f);
   }
 }
+function handlePostVideo(e){
+  const f=e.target.files[0];if(!f)return;
+  // Limit video size to ~15MB
+  if(f.size>15*1024*1024){alert('视频太大，请选择15MB以内的视频');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    postVideo=ev.target.result;
+    renderPostVideoThumbs();
+  };
+  r.readAsDataURL(f);
+}
 function renderPostThumbs(){
   document.getElementById('postThumbs').innerHTML=postImgs.map((src,i)=>
     `<div class="thumb"><img src="${src}"><button class="rm" onclick="rmPostImg(${i})">✕</button></div>`
   ).join('');
 }
+function renderPostVideoThumbs(){
+  const el=document.getElementById('postVideoThumbs');
+  if(postVideo){
+    el.innerHTML=`<div class="post-video-thumb"><video src="${postVideo}" muted></video><button class="rm" onclick="rmPostVideo()">✕</button></div>`;
+  }else{
+    el.innerHTML='';
+  }
+}
 function rmPostImg(i){postImgs.splice(i,1);renderPostThumbs();}
+function rmPostVideo(){postVideo=null;renderPostVideoThumbs();}
 function savePost(){
   const text=document.getElementById('postTextInput').value.trim();
-  if(!text&&postImgs.length===0){alert('写点什么或选张图吧');return;}
-  if(!data.posts)data.posts=[];
-  data.posts.unshift({id:'p_'+Date.now(),text,images:[...postImgs],likes:[],comments:[],date:new Date().toISOString()});
+  if(!text&&postImgs.length===0&&!postVideo){alert('写点什么或选张图吧');return;}
+  const modal=document.getElementById('postModal');
+  const editId=modal.dataset.editId;
+  if(editId){
+    const p=(data.posts||[]).find(x=>x.id===editId);
+    if(p){
+      p.text=text;p.images=[...postImgs];p.video=postVideo||null;
+    }
+  }else{
+    if(!data.posts)data.posts=[];
+    data.posts.unshift({id:'p_'+Date.now(),text,images:[...postImgs],video:postVideo||null,likes:[],comments:[],date:new Date().toISOString()});
+  }
   save();closeModal('postModal');renderDaily();
 }
 function fmtRelative(d){
@@ -1139,35 +1697,63 @@ function fmtRelative(d){
   if(day<7)return day+'天前';
   return fmtDate(d);
 }
-function renderDaily(){
+function renderDaily(searchQuery){
   const feed=document.getElementById('dailyFeed'),empty=document.getElementById('emptyDaily');
-  const posts=data.posts||[];
-  if(posts.length===0){empty.style.display='block';feed.innerHTML='';return;}
+  let posts=data.posts||[];
+  // Filter by search query
+  if(searchQuery){
+    const q=searchQuery.toLowerCase();
+    posts=posts.filter(p=>(p.text||'').toLowerCase().includes(q));
+  }
+  if(posts.length===0){
+    empty.style.display='block';
+    if(searchQuery)empty.innerHTML='<div class="icon">🔍</div><p>没找到相关动态</p>';
+    else empty.innerHTML='<div class="icon">🌳</div><p>还没有动态，记录一下今天吧</p>';
+    feed.innerHTML='';
+    return;
+  }
   empty.style.display='none';
+  const profile=data.profile||{name:'Kora',avatar:''};
   feed.innerHTML=posts.map(p=>{
     const imgs=p.images||[];
     let gridCls='single';
     if(imgs.length===2)gridCls='two';else if(imgs.length===3)gridCls='three';else if(imgs.length>=4)gridCls='four';
     const shown=imgs.length>4?imgs.slice(0,4):imgs;
+    const avatarHTML=profile.avatar?`<img src="${profile.avatar}">`:esc((profile.name||'K')[0]);
     return `<div class="post-card">
-      <span class="post-delete" onclick="delPost('${p.id}')">删除</span>
+      <div class="post-top-actions">
+        <span class="post-edit" onclick="editPost('${p.id}')">修改</span>
+        <span class="post-delete" onclick="delPost('${p.id}')">删除</span>
+      </div>
       <div class="post-header">
-        <div class="post-avatar">K</div>
-        <div><div class="post-user">Kora</div><div class="post-time">${fmtRelative(p.date)}</div></div>
+        <div class="post-avatar">${avatarHTML}</div>
+        <div><div class="post-user">${esc(profile.name||'Kora')}</div><div class="post-time">${fmtRelative(p.date)}</div></div>
       </div>
       ${p.text?`<div class="post-text">${esc(p.text)}</div>`:''}
+      ${p.video?`<div class="post-images single"><video src="${p.video}" controls playsinline style="border-radius:10px;width:100%;max-height:300px;"></video></div>`:''}
       ${imgs.length?`<div class="post-images ${gridCls}">${shown.map(s=>`<img src="${s}">`).join('')}</div>`:''}
       <div class="post-actions">
         <div class="post-action ${(p.likes||[]).length>0?'liked':''}" onclick="toggleLike('${p.id}')">${(p.likes||[]).length>0?'❤️':'🤍'} ${(p.likes||[]).length}</div>
         <div class="post-action" onclick="document.getElementById('cmInput_${p.id}').focus()">💬 ${(p.comments||[]).length}</div>
       </div>
-      ${(p.comments||[]).length?`<div class="post-comment-list">${p.comments.map((c,i)=>`<div class="post-comment"><b>Kora</b> ${esc(c)}<span class="cm-del" onclick="delComment('${p.id}',${i})">删除</span></div>`).join('')}</div>`:''}
+      ${(p.comments||[]).length?`<div class="post-comment-list">${p.comments.map((c,i)=>`<div class="post-comment"><b>${esc(profile.name||'Kora')}</b> ${esc(c)}<span class="cm-del" onclick="delComment('${p.id}',${i})">删除</span></div>`).join('')}</div>`:''}
       <div class="post-comment-input">
         <input type="text" id="cmInput_${p.id}" placeholder="写评论..." onkeypress="if(event.key==='Enter')addComment('${p.id}',this.value,this)">
         <button onclick="addComment('${p.id}',document.getElementById('cmInput_${p.id}').value,document.getElementById('cmInput_${p.id}'))">发送</button>
       </div>
     </div>`;
   }).join('');
+}
+function editPost(pid){
+  const p=(data.posts||[]).find(x=>x.id===pid);if(!p)return;
+  document.getElementById('postModal').classList.add('active');
+  document.querySelector('#postModal h2').textContent='修改动态';
+  document.getElementById('postModal').dataset.editId=pid;
+  document.getElementById('postTextInput').value=p.text||'';
+  postImgs=[...(p.images||[])];
+  postVideo=p.video||null;
+  renderPostThumbs();
+  renderPostVideoThumbs();
 }
 function toggleLike(pid){
   const p=(data.posts||[]).find(x=>x.id===pid);if(!p)return;
