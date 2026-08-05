@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v17-rmbg-fix';
+const CACHE_NAME = 'miracle-v18-fix-noteimg';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
