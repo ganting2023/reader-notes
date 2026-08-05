@@ -380,6 +380,72 @@ input,textarea{font-family:inherit;}
 .sticky-note-el .sticky-del{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:#c44;color:#fff;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .sticky-note-el textarea{width:100%;min-width:60px;border:none;background:transparent;font-size:inherit;color:inherit;resize:none;outline:none;font-family:inherit;line-height:1.4;text-align:center;}
 .sticky-note-el .sticky-text{width:100%;word-break:break-word;}
+
+/* ===== AI 功能样式 ===== */
+/* AI Config */
+.ai-config-section{margin-top:24px;padding-top:20px;border-top:1px solid var(--line);}
+.ai-config-section h3{font-size:0.82rem;font-weight:500;letter-spacing:2px;color:var(--text);margin-bottom:12px;text-align:center;}
+.ai-config-section label{display:block;font-size:0.72rem;color:var(--text-mid);margin:10px 0 4px;letter-spacing:1px;}
+.ai-config-section input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:0.82rem;color:var(--text);background:#fafafa;}
+.ai-config-section input:focus{outline:none;border-color:var(--accent);background:#fff;}
+.ai-key-wrap{position:relative;}
+.ai-key-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:0.8rem;cursor:pointer;color:var(--text-mid);background:none;border:none;padding:4px;}
+.ai-config-hint{font-size:0.66rem;color:var(--text-light);margin-top:6px;line-height:1.5;}
+
+/* AI Loading */
+.ai-loading{display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text-mid);padding:6px 12px;background:rgba(126,168,162,0.06);border-radius:8px;margin-top:6px;}
+.ai-loading .spinner{width:14px;height:14px;border:1.5px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+
+/* AI buttons in note modal */
+.ai-note-btns{display:flex;gap:8px;margin-top:8px;}
+.ai-note-btn{flex:1;padding:8px;text-align:center;font-size:0.74rem;border-radius:8px;cursor:pointer;transition:all 0.2s;background:rgba(126,168,162,0.08);color:var(--accent);border:1px solid rgba(126,168,162,0.2);letter-spacing:1px;}
+.ai-note-btn:active{transform:scale(0.97);}
+.ai-note-btn:disabled{opacity:0.5;}
+.ai-note-btn.ocr{background:rgba(174,181,196,0.1);color:var(--accent2);border-color:rgba(174,181,196,0.2);}
+
+/* AI analysis in polaroid */
+.ai-analysis{background:linear-gradient(135deg,#f0f5f0,#f0f5f8);border-radius:10px;padding:10px 14px;margin-top:10px;border:1px solid rgba(126,168,162,0.1);}
+.ai-analysis .ai-lbl{font-size:0.6rem;color:var(--accent);letter-spacing:2px;margin-bottom:6px;display:flex;align-items:center;gap:4px;}
+.ai-analysis .ai-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;}
+.ai-analysis .ai-tag{font-size:0.6rem;background:rgba(126,168,162,0.15);color:var(--accent);border-radius:6px;padding:2px 8px;}
+.ai-analysis .ai-summary{font-size:0.76rem;color:var(--text-mid);line-height:1.5;font-style:italic;margin-top:4px;}
+.ai-analysis .ai-cat{font-size:0.66rem;color:var(--accent2);margin-top:4px;}
+.ai-analysis .ai-redo{font-size:0.64rem;color:var(--text-light);cursor:pointer;margin-top:6px;text-decoration:underline;}
+
+/* AI Chat floating button */
+.ai-chat-fab{position:fixed;bottom:calc(var(--safe) + 80px);right:20px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 16px rgba(126,168,162,0.4);z-index:200;transition:all 0.25s;}
+.ai-chat-fab:active{transform:scale(0.9);}
+
+/* AI Chat overlay */
+.ai-chat-overlay{display:none;position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0.2);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;}
+.ai-chat-overlay.active{display:flex;}
+.ai-chat-panel{background:#fff;width:100%;max-width:600px;height:70vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;animation:chatSlideUp 0.3s ease;box-shadow:0 -4px 30px rgba(0,0,0,0.1);}
+@keyframes chatSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.ai-chat-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);}
+.ai-chat-header .title{font-family:var(--serif);font-size:0.92rem;letter-spacing:2px;color:var(--text);}
+.ai-chat-close{font-size:1.2rem;color:var(--text-mid);cursor:pointer;background:none;border:none;padding:4px 8px;}
+.ai-chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.ai-chat-msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:0.82rem;line-height:1.6;word-break:break-word;white-space:pre-wrap;}
+.ai-chat-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:14px 14px 4px 14px;}
+.ai-chat-msg.bot{align-self:flex-start;background:#f5f5f5;color:var(--text);border-radius:14px 14px 14px 4px;}
+.ai-chat-typing{align-self:flex-start;background:#f5f5f5;padding:12px 16px;border-radius:14px 14px 14px 4px;font-size:0.82rem;color:var(--text-mid);display:flex;align-items:center;gap:6px;}
+.ai-chat-typing .dot{width:6px;height:6px;border-radius:50%;background:var(--text-light);animation:typingBounce 1.2s infinite;}
+.ai-chat-typing .dot:nth-child(2){animation-delay:0.2s;}
+.ai-chat-typing .dot:nth-child(3){animation-delay:0.4s;}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+.ai-chat-input-bar{display:flex;gap:8px;padding:12px 16px calc(var(--safe) + 12px);border-top:1px solid var(--line);}
+.ai-chat-input-bar input{flex:1;border:1px solid var(--line);border-radius:22px;padding:10px 16px;font-size:0.82rem;color:var(--text);background:#fafafa;}
+.ai-chat-input-bar input:focus{outline:none;border-color:var(--accent);}
+.ai-chat-input-bar button{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:10px 18px;border-radius:22px;font-size:0.78rem;cursor:pointer;letter-spacing:1px;}
+.ai-chat-input-bar button:disabled{opacity:0.5;}
+
+/* AI search results */
+.ai-search-results{max-width:680px;margin:0 auto;padding:8px 16px;}
+.ai-search-result-item{background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer;border:1px solid rgba(0,0,0,0.02);transition:all 0.2s;}
+.ai-search-result-item:active{transform:scale(0.98);}
+.ai-search-result-item .asr-book{font-size:0.68rem;color:var(--accent);letter-spacing:1px;margin-bottom:4px;}
+.ai-search-result-item .asr-quote{font-family:var(--serif);font-size:0.8rem;line-height:1.6;color:var(--text);}
+.ai-search-result-item .asr-thoughts{font-size:0.74rem;color:var(--text-mid);margin-top:6px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -451,6 +517,22 @@ input,textarea{font-family:inherit;}
     <div class="profile-stats" id="profileStats"></div>
     <textarea class="profile-bio" id="profileBioInput" placeholder="写一句签名吧..."></textarea>
     <button class="profile-save-btn" onclick="saveProfile()">保存</button>
+    
+    <!-- AI Settings -->
+    <div class="ai-config-section">
+      <h3>🤖 AI 设置</h3>
+      <label>API Key</label>
+      <div class="ai-key-wrap">
+        <input type="password" id="aiApiKey" placeholder="输入你的 API Key" value="">
+        <button class="ai-key-toggle" onclick="toggleAiKeyVisibility()">👁</button>
+      </div>
+      <label>API 地址</label>
+      <input type="text" id="aiEndpoint" placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions" value="">
+      <label>模型</label>
+      <input type="text" id="aiModel" placeholder="glm-4-flash" value="">
+      <div class="ai-config-hint">配置 AI 后可使用：智能分析摘录、AI 对话、感悟润色/续写、语义搜索、图片 OCR<br>推荐使用智谱 GLM 系列（glm-4-flash 免费额度）</div>
+      <button class="profile-save-btn" onclick="saveAiConfig()" style="margin-top:12px;padding:9px 24px;font-size:0.78rem;">保存 AI 配置</button>
+    </div>
   </div>
 </div>
 
@@ -463,6 +545,23 @@ input,textarea{font-family:inherit;}
   <div class="add-btn-wrap"><button class="btn-add" onclick="openNoteModal()">+ 添加摘录</button></div>
   <div id="emptyNotes" class="empty" style="display:none;"><div class="icon">📖</div><p>还没有摘录，开始记录吧</p></div>
   <div class="notes-grid" id="notesGrid"></div>
+  <!-- AI Chat FAB -->
+  <div class="ai-chat-fab" onclick="openAiChat()">🤖</div>
+</div>
+
+<!-- AI Chat Overlay -->
+<div class="ai-chat-overlay" id="aiChatOverlay">
+  <div class="ai-chat-panel">
+    <div class="ai-chat-header">
+      <div class="title">🤖 AI 阅读助手</div>
+      <button class="ai-chat-close" onclick="closeAiChat()">✕</button>
+    </div>
+    <div class="ai-chat-messages" id="aiChatMessages"></div>
+    <div class="ai-chat-input-bar">
+      <input type="text" id="aiChatInput" placeholder="问点什么..." onkeypress="if(event.key==='Enter')sendAiChat()">
+      <button onclick="sendAiChat()">发送</button>
+    </div>
+  </div>
 </div>
 
 </div>
@@ -571,8 +670,14 @@ input,textarea{font-family:inherit;}
     <input type="file" id="noteImgInput" accept="image/*" style="display:none" onchange="handleNoteImg(event)">
     <img class="img-preview" id="noteImgPrev">
     <button id="editImgBtn" class="btn-edit-img" style="display:none;" onclick="openImgEditor()">✏️ 编辑图片</button>
+    <button id="aiOcrBtn" class="ai-note-btn ocr" style="display:none;" onclick="aiOcr()">🔍 AI 识别文字</button>
+    <div id="aiOcrLoading" class="ai-loading" style="display:none;"><span class="spinner"></span>正在识别文字...</div>
     <label>摘录的句子</label><textarea class="quote-input" id="inputQuote" placeholder="好句子..."></textarea>
     <label>感悟</label><textarea class="thoughts-input" id="inputThoughts" placeholder="你的想法..."></textarea>
+    <div class="ai-note-btns">
+      <button class="ai-note-btn" id="aiPolishBtn" onclick="aiPolish()">✨ AI 润色</button>
+      <button class="ai-note-btn" id="aiContinueBtn" onclick="aiContinue()">✍ AI 续写</button>
+    </div>
         <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('noteModal')">取消</button><button class="btn-save" onclick="saveNote()">保存</button></div>
   </div>
 </div>
@@ -664,14 +769,22 @@ function toggleDailySearch(){
   }
 }
 function searchHome(query){
-  query=(query||'').toLowerCase().trim();
+  query=(query||'').trim();
   const list=document.getElementById('bookList');
   if(!query){renderHome();return;}
+  // AI semantic search
+  if(query.toLowerCase().startsWith('ai:')){
+    const aiQuery=query.slice(3).trim();
+    if(!aiQuery)return;
+    aiSearch(aiQuery);
+    return;
+  }
+  const q=query.toLowerCase();
   const filtered=data.books.filter(b=>{
     const title=(b.title||'').toLowerCase();
     const author=(b.author||'').toLowerCase();
     const tags=(b.tags||[]).join(' ').toLowerCase();
-    return title.includes(query)||author.includes(query)||tags.includes(query);
+    return title.includes(q)||author.includes(q)||tags.includes(q);
   });
   if(filtered.length===0){
     list.innerHTML='<div class="empty" style="padding:40px;"><div class="icon">🔍</div><p>没找到相关的书</p></div>';
@@ -981,10 +1094,19 @@ function renderNotes(b){
 function showNote(bid,idx){
   const b=data.books.find(x=>x.id===bid);if(!b||!b.notes[idx])return;
   const n=b.notes[idx];
+  let aiHtml='';
+  if(n.aiTags||n.aiSummary||n.aiCategory){
+    aiHtml='<div class="ai-analysis"><div class="ai-lbl">🤖 AI 分析</div>';
+    if(n.aiTags&&n.aiTags.length){aiHtml+='<div class="ai-tags">'+n.aiTags.map(t=>'<span class="ai-tag">'+esc(t)+'</span>').join('')+'</div>';}
+    if(n.aiSummary){aiHtml+='<div class="ai-summary">'+esc(n.aiSummary)+'</div>';}
+    if(n.aiCategory){aiHtml+='<div class="ai-cat">分类：'+esc(n.aiCategory)+'</div>';}
+    aiHtml+='<div class="ai-redo" onclick="analyzeNote(\''+bid+'\','+idx+')">重新分析</div></div>';
+  }
   document.getElementById('polaroidCard').innerHTML=`
     ${n.image?`<img src="${n.image}">`:''}
     ${n.quote?`<div class="p-quote">"${esc(n.quote)}"</div>`:''}
     ${n.thoughts?`<div class="p-card"><div class="lbl">✍ 感悟</div><div class="txt">${esc(n.thoughts)}</div></div>`:''}
+    ${aiHtml}
     <div class="p-date">${fmtDate(n.date)}</div>
     <div class="p-actions"><button class="btn-edit" onclick="editNote('${bid}',${idx})">修改</button><button class="btn-del" onclick="delNote('${bid}',${idx})">删除</button><button class="btn-close" onclick="closeNote()">关闭</button></div>`;
   document.getElementById('noteDetail').classList.add('active');
@@ -1003,8 +1125,8 @@ function editNote(bid,idx){
   document.querySelector('#noteModal h2').textContent='修改摘录';
   document.getElementById('noteImgInput').value='';
   var p=document.getElementById('noteImgPrev');
-  if(n.image){p.src=n.image;p.classList.add('show');var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='block';}
-  else{p.classList.remove('show');p.src='';var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='none';}
+  if(n.image){p.src=n.image;p.classList.add('show');var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='block';var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='block';}
+  else{p.classList.remove('show');p.src='';var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='none';var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='none';}
   document.getElementById('inputQuote').value=n.quote||'';
   document.getElementById('inputThoughts').value=n.thoughts||'';
   document.getElementById('noteModal').dataset.editIdx=idx;
@@ -1167,7 +1289,7 @@ function saveBook(){
   }
   save();closeModal('bookModal');renderHome();
 }
-function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=h*mx/w;w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='block';};img.src=ev.target.result;};r.readAsDataURL(f);}
+function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=h*mx/w;w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='block';var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='block';};img.src=ev.target.result;};r.readAsDataURL(f);}
 function saveNote(){
   const quote=document.getElementById('inputQuote').value.trim(),thoughts=document.getElementById('inputThoughts').value.trim();
   if(!quote&&!thoughts&&!noteImg){alert('至少写点什么');return;}
@@ -1188,6 +1310,12 @@ function saveNote(){
   const b2=data.books.find(x=>x.id===bid);
   if(b2)renderNotes(b2);
   renderHome();
+  // Trigger AI analysis if configured
+  const isNewNote=editIdx===undefined||editIdx==='';
+  const noteIdx=isNewNote?0:parseInt(editIdx);
+  if(data.aiConfig&&data.aiConfig.apiKey){
+    analyzeNote(bid,noteIdx);
+  }
 }
 
 function openBookModal(){
@@ -1213,6 +1341,8 @@ function openNoteModal(){
   document.getElementById('noteImgPrev').classList.remove('show');
   document.getElementById('noteImgPrev').src='';
   var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='none';
+  var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='none';
+  var ol=document.getElementById('aiOcrLoading');if(ol)ol.style.display='none';
   document.getElementById('inputQuote').value='';
   document.getElementById('inputThoughts').value='';
   noteImg=null;
@@ -1778,6 +1908,291 @@ function delPost(pid){
 }
 
 renderHome();
+
+// ===== AI Functions =====
+// Load AI config into profile inputs
+function loadAiConfigUI(){
+  const cfg=data.aiConfig||{};
+  document.getElementById('aiApiKey').value=cfg.apiKey||'';
+  document.getElementById('aiEndpoint').value=cfg.endpoint||'';
+  document.getElementById('aiModel').value=cfg.model||'';
+}
+function toggleAiKeyVisibility(){
+  const inp=document.getElementById('aiApiKey');
+  inp.type=inp.type==='password'?'text':'password';
+}
+function saveAiConfig(){
+  data.aiConfig={
+    apiKey:document.getElementById('aiApiKey').value.trim(),
+    endpoint:document.getElementById('aiEndpoint').value.trim()||'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+    model:document.getElementById('aiModel').value.trim()||'glm-4-flash'
+  };
+  save();
+  const toast=document.createElement('div');
+  toast.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:10px 24px;border-radius:20px;font-size:0.82rem;z-index:9999;';
+  toast.textContent='AI 配置已保存 ✓';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),1500);
+}
+
+// Reusable AI call
+async function callAI(messages,options={}){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey)return null;
+  const model=options.model||cfg.model||'glm-4-flash';
+  const endpoint=cfg.endpoint||'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+  try{
+    const resp=await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+      body:JSON.stringify({model,messages,temperature:options.temperature||0.7,...(options.max_tokens?{max_tokens:options.max_tokens}:{})})
+    });
+    if(!resp.ok)throw new Error('API error: '+resp.status);
+    const json=await resp.json();
+    return json.choices[0].message.content;
+  }catch(e){
+    console.error('AI call failed:',e);
+    return null;
+  }
+}
+
+// Vision AI call (for OCR)
+async function callAIVision(imageBase64,prompt){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey)return null;
+  const model='glm-4v-flash';
+  const endpoint=cfg.endpoint||'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+  const messages=[{
+    role:'user',
+    content:[
+      {type:'text',text:prompt},
+      {type:'image_url',image_url:{url:imageBase64}}
+    ]
+  }];
+  try{
+    const resp=await fetch(endpoint,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+      body:JSON.stringify({model,messages,temperature:0.3})
+    });
+    if(!resp.ok)throw new Error('API error: '+resp.status);
+    const json=await resp.json();
+    return json.choices[0].message.content;
+  }catch(e){
+    console.error('AI Vision failed:',e);
+    return null;
+  }
+}
+
+function aiHint(){
+  alert('请在「我的」页面配置 AI API Key 后使用此功能');
+}
+
+// Feature 1: Smart Excerpt Analysis
+async function analyzeNote(bid,idx){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey)return;
+  const b=data.books.find(x=>x.id===bid);
+  if(!b||!b.notes[idx])return;
+  const n=b.notes[idx];
+  const text=n.quote||n.thoughts||'';
+  if(!text)return;
+  const result=await callAI([
+    {role:'system',content:'你是一个阅读助手。请分析用户提供的摘录文本，返回JSON格式：{"tags":["标签1","标签2"],"summary":"一句话总结","category":"分类"}。标签3-5个，分类用一个词（如：文学/心理学/哲学/科学等）。只返回JSON，不要其他文字。'},
+    {role:'user',content:text}
+  ],{temperature:0.3});
+  if(!result)return;
+  try{
+    const parsed=JSON.parse(result.replace(/```json|```/g,'').trim());
+    n.aiTags=parsed.tags||[];
+    n.aiSummary=parsed.summary||'';
+    n.aiCategory=parsed.category||'';
+    save();
+    if(document.getElementById('noteDetail').classList.contains('active')){
+      showNote(bid,idx);
+    }
+  }catch(e){
+    console.error('Parse AI analysis failed:',e);
+  }
+}
+
+// Feature 2: AI Chat Assistant
+let aiChatCurrentBookId=null;
+function openAiChat(){
+  if(!currentBookId)return;
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey){aiHint();return;}
+  aiChatCurrentBookId=currentBookId;
+  document.getElementById('aiChatOverlay').classList.add('active');
+  renderAiChatMessages();
+  setTimeout(()=>document.getElementById('aiChatInput').focus(),300);
+}
+function closeAiChat(){
+  document.getElementById('aiChatOverlay').classList.remove('active');
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var ov=document.getElementById('aiChatOverlay');
+  if(ov)ov.addEventListener('click',function(e){if(e.target===ov)closeAiChat();});
+});
+function renderAiChatMessages(){
+  const b=data.books.find(x=>x.id===aiChatCurrentBookId);
+  if(!b)return;
+  const history=b.chatHistory||[];
+  const el=document.getElementById('aiChatMessages');
+  if(history.length===0){
+    el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text-light);font-size:0.8rem;">向 AI 提问关于《'+esc(b.title)+'》的问题吧</div>';
+    return;
+  }
+  el.innerHTML=history.map(m=>
+    '<div class="ai-chat-msg '+(m.role==='user'?'user':'bot')+'">'+esc(m.content)+'</div>'
+  ).join('');
+  el.scrollTop=el.scrollHeight;
+}
+async function sendAiChat(){
+  const input=document.getElementById('aiChatInput');
+  const text=input.value.trim();
+  if(!text)return;
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey){aiHint();return;}
+  const b=data.books.find(x=>x.id===aiChatCurrentBookId);
+  if(!b)return;
+  b.chatHistory=b.chatHistory||[];
+  b.chatHistory.push({role:'user',content:text,time:new Date().toISOString()});
+  save();
+  input.value='';
+  renderAiChatMessages();
+  const msgEl=document.getElementById('aiChatMessages');
+  const typing=document.createElement('div');
+  typing.className='ai-chat-typing';
+  typing.id='aiTypingIndicator';
+  typing.innerHTML='<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+  msgEl.appendChild(typing);
+  msgEl.scrollTop=msgEl.scrollHeight;
+  const noteContext=(b.notes||[]).map(n=>'- '+(n.quote||n.thoughts||'')).join('\n');
+  const systemPrompt='你是一个阅读助手。用户正在阅读《'+b.title+'》'+(b.author?'，作者：'+b.author:'')+'。标签：'+(b.tags||[]).join(', ')+'。\n\n用户的摘录笔记：\n'+noteContext+'\n\n请基于这些内容与用户讨论，帮助理解书中内容。';
+  const messages=[{role:'system',content:systemPrompt}];
+  b.chatHistory.forEach(m=>{messages.push({role:m.role,content:m.content});});
+  messages.push({role:'user',content:text});
+  const reply=await callAI(messages);
+  const ti=document.getElementById('aiTypingIndicator');
+  if(ti)ti.remove();
+  if(reply){
+    b.chatHistory.push({role:'assistant',content:reply,time:new Date().toISOString()});
+  }else{
+    b.chatHistory.push({role:'assistant',content:'抱歉，AI 回复失败了，请检查 API 配置。',time:new Date().toISOString()});
+  }
+  save();
+  renderAiChatMessages();
+}
+
+// Feature 3: Writing Assistant
+async function aiPolish(){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey){aiHint();return;}
+  const ta=document.getElementById('inputThoughts');
+  const text=ta.value.trim();
+  if(!text){alert('请先写一些感悟');return;}
+  const btn=document.getElementById('aiPolishBtn');
+  btn.disabled=true;btn.textContent='⏳ 润色中...';
+  const result=await callAI([
+    {role:'system',content:'你是文字编辑助手。请润色用户的感悟文字，使其更加优美流畅，但保持原意不变。直接返回润色后的文字，不要解释。'},
+    {role:'user',content:text}
+  ],{temperature:0.6});
+  btn.disabled=false;btn.textContent='✨ AI 润色';
+  if(result){
+    if(confirm('AI 润色结果：\n\n'+result+'\n\n是否替换原内容？')){
+      ta.value=result;
+    }
+  }else{
+    alert('AI 润色失败，请检查配置');
+  }
+}
+async function aiContinue(){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey){aiHint();return;}
+  const ta=document.getElementById('inputThoughts');
+  const text=ta.value.trim();
+  const quote=document.getElementById('inputQuote').value.trim();
+  if(!text){alert('请先写一些感悟');return;}
+  const btn=document.getElementById('aiContinueBtn');
+  btn.disabled=true;btn.textContent='⏳ 续写中...';
+  const prompt='摘录：'+(quote||'无')+'\n\n用户感悟：'+text+'\n\n请基于以上内容继续写一些深入的思考和感悟，150字以内。直接返回续写内容。';
+  const result=await callAI([
+    {role:'system',content:'你是一个阅读感悟续写助手。请基于用户的摘录和感悟，帮助续写更深入的思考。直接返回续写的文字，不要解释。'},
+    {role:'user',content:prompt}
+  ],{temperature:0.8});
+  btn.disabled=false;btn.textContent='✍ AI 续写';
+  if(result){
+    ta.value=text+'\n'+result;
+  }else{
+    alert('AI 续写失败，请检查配置');
+  }
+}
+
+// Feature 4: Smart Search
+async function aiSearch(query){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey){aiHint();return;}
+  const list=document.getElementById('bookList');
+  list.innerHTML='<div class="ai-loading" style="padding:30px;text-align:center;justify-content:center;">\n<span class="spinner"></span>AI 搜索中...</div>';
+  const allNotes=[];
+  data.books.forEach(b=>{
+    (b.notes||[]).forEach((n,i)=>{
+      allNotes.push({book:b.title,bookId:b.id,idx:i,quote:n.quote||'',thoughts:n.thoughts||''});
+    });
+  });
+  if(allNotes.length===0){
+    list.innerHTML='<div class="empty" style="padding:40px;"><div class="icon">🔍</div><p>没有摘录可搜索</p></div>';
+    return;
+  }
+  const index=allNotes.map((n,i)=>'['+i+'] 《'+n.book+'》:'+n.quote).join('\n');
+  const result=await callAI([
+    {role:'system',content:'你是搜索助手。用户想搜索与某个主题相关的摘录。请从以下摘录列表中找到最相关的（最多10条），返回JSON数组格式：[{"idx":编号,"reason":"匹配原因"}]。只返回JSON。'},
+    {role:'user',content:'搜索：'+query+'\n\n摘录列表：\n'+index}
+  ],{temperature:0.2,max_tokens:1000});
+  if(!result){
+    list.innerHTML='<div class="empty" style="padding:40px;"><div class="icon">😅</div><p>AI 搜索失败，请重试</p></div>';
+    return;
+  }
+  try{
+    const matches=JSON.parse(result.replace(/```json|```/g,'').trim());
+    const html=matches.map(m=>{
+      const note=allNotes[m.idx];
+      if(!note)return '';
+      return '<div class="ai-search-result-item" onclick="openBook(\''+note.bookId+'\')"><div class="asr-book">《'+esc(note.book)+'》</div><div class="asr-quote">'+esc(note.quote.slice(0,100))+'</div>'+(note.thoughts?'<div class="asr-thoughts">'+esc(note.thoughts.slice(0,60))+'</div>':'')+'</div>';
+    }).join('');
+    list.innerHTML='<div class="ai-search-results">'+(html||'<div class="empty" style="padding:40px;"><div class="icon">🔍</div><p>没有找到相关摘录</p></div>')+'</div>';
+  }catch(e){
+    list.innerHTML='<div class="empty" style="padding:40px;"><div class="icon">😅</div><p>搜索结果解析失败</p></div>';
+  }
+}
+
+// Feature 5: Image OCR
+async function aiOcr(){
+  const cfg=data.aiConfig||{};
+  if(!cfg.apiKey){aiHint();return;}
+  if(!noteImg){alert('请先选择图片');return;}
+  const btn=document.getElementById('aiOcrBtn');
+  const loading=document.getElementById('aiOcrLoading');
+  btn.style.display='none';
+  loading.style.display='block';
+  const result=await callAIVision(noteImg,'请提取图片中的所有文字，保持原文格式。只返回提取的文字内容，不要解释。如果没有文字，返回"未识别到文字"。');
+  loading.style.display='none';
+  btn.style.display='block';
+  if(result&&result.trim()!=='未识别到文字'){
+    const ta=document.getElementById('inputQuote');
+    if(ta.value.trim()){ta.value=ta.value+'\n'+result;}
+    else{ta.value=result;}
+  }else if(result){
+    alert('未识别到文字');
+  }else{
+    alert('OCR 失败，请检查 AI 配置');
+  }
+}
+
+// Load AI config on profile render
+var _origRenderProfile=renderProfile;
+renderProfile=function(){_origRenderProfile();loadAiConfigUI();};
 </script>
 </body>
 </html>

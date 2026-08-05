@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v8-saoire';
+const CACHE_NAME = 'miracle-v9-saoire-ai';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
