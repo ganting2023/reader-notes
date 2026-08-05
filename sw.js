@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v4-morandi';
+const CACHE_NAME = 'miracle-v5';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',

@@ -191,6 +191,7 @@ input,textarea{font-family:inherit;}
 .polaroid .p-date{font-family:var(--serif);font-size:0.68rem;color:var(--text-light);text-align:center;margin-top:12px;letter-spacing:3px;}
 .polaroid .p-actions{display:flex;gap:10px;margin-top:14px;justify-content:center;}
 .polaroid .p-actions button{font-size:0.74rem;padding:6px 16px;border-radius:16px;letter-spacing:1px;}
+.polaroid .btn-edit{color:#7a8a7a;background:#f0f5f0;}
 .polaroid .btn-del{color:#a08080;background:#f8f4f4;}
 .polaroid .btn-close{color:var(--text-mid);background:var(--line);}
 
@@ -228,9 +229,9 @@ input,textarea{font-family:inherit;}
 .color-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
 .color-opt{width:30px;height:30px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:all 0.2s;}
 .color-opt.selected{border-color:var(--text);transform:scale(1.1);}
-.color-custom-wrap{width:30px;height:30px;border-radius:50%;border:2px dashed var(--text-light);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden;}
+.color-custom-wrap{width:30px;height:30px;border-radius:50%;border:2.5px solid transparent;border:2px dashed var(--text-light);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden;box-sizing:border-box;flex-shrink:0;}
 .color-custom-wrap input{position:absolute;inset:0;opacity:0;cursor:pointer;}
-.color-custom-wrap .plus{font-size:0.8rem;color:var(--text-light);}
+.color-custom-wrap .plus{font-size:0.8rem;color:var(--text-light);line-height:1;}
 
 .img-upload{border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;}
 .img-upload:hover{border-color:var(--accent);background:rgba(126,168,162,0.02);}
@@ -264,7 +265,28 @@ input,textarea{font-family:inherit;}
 .cutout-loading .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-@media print{.dock,.modal-overlay,.note-detail-overlay,.press-menu{display:none!important;}}
+@media print{.dock,.modal-overlay,.note-detail-overlay,.press-menu,#imgEditor{display:none!important;}}
+
+/* Edit image button */
+.btn-edit-img{display:block;width:100%;margin-top:8px;padding:8px;text-align:center;font-size:0.76rem;color:var(--accent);background:rgba(126,168,162,0.08);border:1px solid rgba(126,168,162,0.2);border-radius:8px;letter-spacing:1px;}
+
+/* Image Editor */
+#imgEditor{display:none;position:fixed;inset:0;z-index:9999;background:#1a1a1a;flex-direction:column;align-items:center;}
+#imgEditor.active{display:flex;}
+#imgEditorCanvas-wrap{flex:1;width:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;}
+#imgEditorCanvas{display:block;touch-action:none;}
+#imgEditorToolbar{width:100%;padding:10px 12px calc(var(--safe) + 10px);background:#222;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;}
+#imgEditorToolbar .tool-btn{padding:8px 12px;border-radius:8px;font-size:0.72rem;color:#ddd;background:#333;border:1px solid #444;transition:all 0.2s;}
+#imgEditorToolbar .tool-btn:active{transform:scale(0.95);}
+#imgEditorToolbar .tool-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+#imgEditorToolbar .tool-spacer{flex:1;}
+#imgEditorToolbar .pen-color{width:28px;height:28px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all 0.2s;}
+#imgEditorToolbar .pen-color.active{border-color:#fff;transform:scale(1.15);}
+#imgEditorToolbar .tool-save{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;font-size:0.8rem;padding:8px 20px;border-radius:20px;}
+#imgEditorToolbar .tool-cancel{background:#444;color:#ccc;border:1px solid #555;font-size:0.8rem;padding:8px 16px;border-radius:20px;}
+.sticky-note-el{position:absolute;min-width:60px;min-height:40px;background:#fff9c4;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.3);padding:6px 8px;font-size:0.65rem;color:#5a4a2a;cursor:move;user-select:none;z-index:10;transform:rotate(-2deg);line-height:1.4;word-break:break-word;max-width:120px;}
+.sticky-note-el .sticky-del{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;background:#e88;background:#c44;color:#fff;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.sticky-note-el textarea{width:100%;min-width:60px;border:none;background:transparent;font-size:0.65rem;color:#5a4a2a;resize:none;outline:none;font-family:inherit;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -303,6 +325,25 @@ input,textarea{font-family:inherit;}
   <div class="notes-grid" id="notesGrid"></div>
 </div>
 
+</div>
+
+<!-- Image Editor -->
+<div id="imgEditor">
+  <div id="imgEditorCanvas-wrap">
+    <canvas id="imgEditorCanvas"></canvas>
+  </div>
+  <div id="imgEditorToolbar">
+    <div class="pen-color active" style="background:#7ea8a2;" data-color="#7ea8a2"></div>
+    <div class="pen-color" style="background:#d4b896;" data-color="#d4b896"></div>
+    <div class="pen-color" style="background:#b0a0b8;" data-color="#b0a0b8"></div>
+    <div class="pen-color" style="background:#c0a8a0;" data-color="#c0a8a0"></div>
+    <div class="pen-color" style="background:#9eb5c4;" data-color="#9eb5c4"></div>
+    <button class="tool-btn" id="toolEraser" onclick="toggleEraser()">🧽 橡皮擦</button>
+    <button class="tool-btn" onclick="addStickyNote()">🗒 便签</button>
+    <div class="tool-spacer"></div>
+    <button class="tool-cancel" onclick="cancelImgEditor()">取消</button>
+    <button class="tool-save" onclick="saveImgEditor()">保存</button>
+  </div>
 </div>
 
 <!-- 程序坞 -->
@@ -350,9 +391,10 @@ input,textarea{font-family:inherit;}
     <div class="img-upload" onclick="document.getElementById('noteImgInput').click()"><div class="icon">📁</div><p>点击选择图片</p></div>
     <input type="file" id="noteImgInput" accept="image/*" style="display:none" onchange="handleNoteImg(event)">
     <img class="img-preview" id="noteImgPrev">
+    <button id="editImgBtn" class="btn-edit-img" style="display:none;" onclick="openImgEditor()">✏️ 编辑图片</button>
     <label>摘录的句子</label><textarea class="quote-input" id="inputQuote" placeholder="好句子..."></textarea>
     <label>感悟</label><textarea class="thoughts-input" id="inputThoughts" placeholder="你的想法..."></textarea>
-    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('noteModal')">取消</button><button class="btn-save" onclick="saveNote()">保存</button></div>
+        <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('noteModal')">取消</button><button class="btn-save" onclick="saveNote()">保存</button></div>
   </div>
 </div>
 
@@ -557,12 +599,30 @@ function showNote(bid,idx){
     ${n.quote?`<div class="p-quote">"${esc(n.quote)}"</div>`:''}
     ${n.thoughts?`<div class="p-card"><div class="lbl">✍ 感悟</div><div class="txt">${esc(n.thoughts)}</div></div>`:''}
     <div class="p-date">${fmtDate(n.date)}</div>
-    <div class="p-actions"><button class="btn-del" onclick="delNote('${bid}',${idx})">删除</button><button class="btn-close" onclick="closeNote()">关闭</button></div>`;
+    <div class="p-actions"><button class="btn-edit" onclick="editNote('${bid}',${idx})">修改</button><button class="btn-del" onclick="delNote('${bid}',${idx})">删除</button><button class="btn-close" onclick="closeNote()">关闭</button></div>`;
   document.getElementById('noteDetail').classList.add('active');
 }
 function closeNote(){document.getElementById('noteDetail').classList.remove('active');}
 document.getElementById('noteDetail').addEventListener('click',function(e){if(e.target===this)closeNote();});
 function delNote(bid,idx){if(!confirm('删除？'))return;const b=data.books.find(x=>x.id===bid);if(!b)return;b.notes.splice(idx,1);save();closeNote();renderNotes(b);renderHome();}
+
+function editNote(bid,idx){
+  closeNote();
+  const b=data.books.find(x=>x.id===bid);if(!b||!b.notes[idx])return;
+  const n=b.notes[idx];
+  currentBookId=bid;
+  noteImg=n.image||null;
+  document.getElementById('noteModal').classList.add('active');
+  document.querySelector('#noteModal h2').textContent='修改摘录';
+  document.getElementById('noteImgInput').value='';
+  var p=document.getElementById('noteImgPrev');
+  if(n.image){p.src=n.image;p.classList.add('show');var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='block';}
+  else{p.classList.remove('show');p.src='';var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='none';}
+  document.getElementById('inputQuote').value=n.quote||'';
+  document.getElementById('inputThoughts').value=n.thoughts||'';
+  document.getElementById('noteModal').dataset.editIdx=idx;
+  document.getElementById('noteModal').dataset.editBookId=bid;
+}
 
 document.querySelectorAll('.color-opt[data-c]').forEach(el=>{
   el.addEventListener('click',()=>{document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');selColor=el.dataset.c;});
@@ -574,26 +634,62 @@ document.getElementById('customColor').addEventListener('input',function(){
 });
 
 function removeBackground(imgData){
-  const c=document.createElement('canvas');
-  let w=imgData.width,h=imgData.height;const mx=500;
+  // Step 1: Draw to canvas (scaled to max 500px wide)
+  const tmpC=document.createElement('canvas');
+  let ow=imgData.naturalWidth||imgData.width,oh=imgData.naturalHeight||imgData.height;
+  const mx=500;
+  let w=ow,h=oh;
   if(w>mx){h=Math.round(h*mx/w);w=mx;}
-  c.width=w;c.height=h;
-  const ctx=c.getContext('2d');
-  ctx.drawImage(imgData,0,0,w,h);
-  const id=ctx.getImageData(0,0,w,h);
+  tmpC.width=w;tmpC.height=h;
+  const tmpCtx=tmpC.getContext('2d');
+  tmpCtx.drawImage(imgData,0,0,w,h);
+  const id=tmpCtx.getImageData(0,0,w,h);
   const d=id.data;
-  // 采样四角颜色作为背景参考
+
+  // Step 2: Sample background color from 4 corners
   const corners=[0,(w-1)*4,(h-1)*w*4,(h-1)*w*4+(w-1)*4];
-  let br=0,bg=0,bb=0,bn=0;
-  corners.forEach(ci=>{br+=d[ci];bg+=d[ci+1];bb+=d[ci+2];bn++;});
-  br/=bn;bg/=bn;bb/=bn;
-  const th=45;
-  for(let i=0;i<d.length;i+=4){
-    const diff=Math.sqrt((d[i]-br)**2+(d[i+1]-bg)**2+(d[i+2]-bb)**2);
-    if(diff<th){d[i+3]=0;}
-    else if(diff<th+30){d[i+3]=Math.round((diff-th)/30*255);}
+  let br=0,bg=0,bb=0;
+  corners.forEach(ci=>{br+=d[ci];bg+=d[ci+1];bb+=d[ci+2];});
+  br/=4;bg/=4;bb/=4;
+  const th=50;
+
+  // Helper: is pixel background?
+  function isBg(r,g,b){return Math.sqrt((r-br)**2+(g-bg)**2+(b-bb)**2)<th;}
+
+  // Step 3: Detect book cover bounding box by scanning from edges
+  // Find first/last non-bg rows
+  let top=0,bottom=h-1,left=0,right=w-1;
+  // Scan rows from top
+  for(let y=0;y<h;y++){let found=false;for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){top=y;break;}}
+  // Scan rows from bottom
+  for(let y=h-1;y>=0;y--){let found=false;for(let x=0;x<w;x++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){bottom=y;break;}}
+  // Scan columns from left
+  for(let x=0;x<w;x++){let found=false;for(let y=0;y<h;y++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){left=x;break;}}
+  // Scan columns from right
+  for(let x=w-1;x>=0;x--){let found=false;for(let y=0;y<h;y++){const i=(y*w+x)*4;if(!isBg(d[i],d[i+1],d[i+2])){found=true;break;}}if(found){right=x;break;}}
+
+  // Add small padding
+  const pad=3;
+  top=Math.max(0,top-pad);left=Math.max(0,left-pad);
+  bottom=Math.min(h-1,bottom+pad);right=Math.min(w-1,right+pad);
+
+  // Step 4: Crop to detected region
+  const cw=right-left+1,ch=bottom-top+1;
+  const c=document.createElement('canvas');
+  c.width=cw;c.height=ch;
+  const ctx=c.getContext('2d');
+  const cImg=ctx.createImageData(cw,ch);
+  for(let y=0;y<ch;y++){for(let x=0;x<cw;x++){const si=((top+y)*w+(left+x))*4;const di=(y*cw+x)*4;cImg.data[di]=d[si];cImg.data[di+1]=d[si+1];cImg.data[di+2]=d[si+2];cImg.data[di+3]=d[si+3];}}
+
+  // Step 5: Remove remaining bg pixels on cropped image (with feathering)
+  const cd2=cImg.data;
+  const th2=45;
+  for(let i=0;i<cd2.length;i+=4){
+    const diff=Math.sqrt((cd2[i]-br)**2+(cd2[i+1]-bg)**2+(cd2[i+2]-bb)**2);
+    if(diff<th2){cd2[i+3]=0;}
+    else if(diff<th2+30){cd2[i+3]=Math.round((diff-th2)/30*255);}
   }
-  ctx.putImageData(id,0,0);
+  ctx.putImageData(cImg,0,0);
   return c.toDataURL('image/png');
 }
 
@@ -637,13 +733,28 @@ function saveBook(){
   }
   save();closeModal('bookModal');renderHome();
 }
-function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=h*mx/w;w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');};img.src=ev.target.result;};r.readAsDataURL(f);}
+function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=h*mx/w;w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='block';};img.src=ev.target.result;};r.readAsDataURL(f);}
 function saveNote(){
   const quote=document.getElementById('inputQuote').value.trim(),thoughts=document.getElementById('inputThoughts').value.trim();
   if(!quote&&!thoughts&&!noteImg){alert('至少写点什么');return;}
-  const b=data.books.find(x=>x.id===currentBookId);if(!b)return;
-  b.notes=b.notes||[];b.notes.unshift({image:noteImg,quote,thoughts,date:new Date().toISOString()});
-  save();closeModal('noteModal');renderNotes(b);renderHome();
+  const modal=document.getElementById('noteModal');
+  const editIdx=modal.dataset.editIdx;
+  if(editIdx!==undefined&&editIdx!==''){
+    // Edit mode
+    const editBid=modal.dataset.editBookId||currentBookId;
+    const b=data.books.find(x=>x.id===editBid);if(!b)return;
+    b.notes=b.notes||[];
+    const idx=parseInt(editIdx);
+    if(b.notes[idx]){b.notes[idx]={image:noteImg,quote,thoughts,date:b.notes[idx].date};}
+  }else{
+    const b=data.books.find(x=>x.id===currentBookId);if(!b)return;
+    b.notes=b.notes||[];b.notes.unshift({image:noteImg,quote,thoughts,date:new Date().toISOString()});
+  }
+  save();closeModal('noteModal');
+  const bid=currentBookId;
+  const b2=data.books.find(x=>x.id===bid);
+  if(b2)renderNotes(b2);
+  renderHome();
 }
 
 function openBookModal(){
@@ -662,9 +773,13 @@ function openBookModal(){
 }
 function openNoteModal(){
   document.getElementById('noteModal').classList.add('active');
+  document.querySelector('#noteModal h2').textContent='添加摘录';
+  delete document.getElementById('noteModal').dataset.editIdx;
+  delete document.getElementById('noteModal').dataset.editBookId;
   document.getElementById('noteImgInput').value='';
   document.getElementById('noteImgPrev').classList.remove('show');
   document.getElementById('noteImgPrev').src='';
+  var eb=document.getElementById('editImgBtn');if(eb)eb.style.display='none';
   document.getElementById('inputQuote').value='';
   document.getElementById('inputThoughts').value='';
   noteImg=null;
@@ -679,9 +794,234 @@ document.querySelector('#pageHome .app-header h1').addEventListener('click',()=>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{
     regs.forEach(r=>r.unregister());
-    navigator.serviceWorker.register('sw.js?v3').catch(()=>{});
+    navigator.serviceWorker.register('sw.js?v5').catch(()=>{});
   });
 }
+
+// ===== Image Editor =====
+let imgEditorCtx=null,imgEditorCanvas=null,editorImg=null;
+let editorDrawLayer=null,editorDrawCtx=null;
+let editorScale=1,editorOffsetX=0,editorOffsetY=0;
+let editorStickyNotes=[];
+let editorDrawing=false,editorLastX=0,editorLastY=0;
+let editorTool='pen',editorColor='#7ea8a2',editorEraser=false;
+
+function openImgEditor(){
+  if(!noteImg)return;
+  const overlay=document.getElementById('imgEditor');
+  overlay.classList.add('active');
+  editorImg=new Image();
+  editorImg.onload=function(){
+    initEditorCanvas();
+  };
+  editorImg.src=noteImg;
+}
+
+function initEditorCanvas(){
+  imgEditorCanvas=document.getElementById('imgEditorCanvas');
+  imgEditorCtx=imgEditorCanvas.getContext('2d');
+  const wrap=document.getElementById('imgEditorCanvas-wrap');
+  const vw=wrap.clientWidth||window.innerWidth;
+  const vh=wrap.clientHeight||window.innerHeight-120;
+  const iw=editorImg.width,ih=editorImg.height;
+  editorScale=Math.min(vw/iw,vh/ih,1);
+  const cw=Math.round(iw*editorScale),ch=Math.round(ih*editorScale);
+  imgEditorCanvas.width=iw;
+  imgEditorCanvas.height=ih;
+  imgEditorCanvas.style.width=cw+'px';
+  imgEditorCanvas.style.height=ch+'px';
+  // Draw base image
+  imgEditorCtx.drawImage(editorImg,0,0,iw,ih);
+  // Create draw layer
+  editorDrawLayer=document.createElement('canvas');
+  editorDrawLayer.width=iw;
+  editorDrawLayer.height=ih;
+  editorDrawCtx=editorDrawLayer.getContext('2d');
+  // Reset sticky notes
+  editorStickyNotes=[];
+  document.querySelectorAll('.sticky-note-el').forEach(e=>e.remove());
+  editorTool='pen';editorEraser=false;editorColor='#7ea8a2';
+  // Reset toolbar
+  document.querySelectorAll('#imgEditorToolbar .pen-color').forEach((e,i)=>e.classList.toggle('active',i===0));
+  document.getElementById('toolEraser').classList.remove('active');
+  // Bind events
+  bindCanvasEvents();
+}
+
+function bindCanvasEvents(){
+  const c=imgEditorCanvas;
+  c.onpointerdown=editorPointerDown;
+  c.onpointermove=editorPointerMove;
+  c.onpointerup=editorPointerUp;
+  c.onpointercancel=editorPointerUp;
+}
+
+function getCanvasPos(e){
+  const rect=imgEditorCanvas.getBoundingClientRect();
+  const scaleX=imgEditorCanvas.width/rect.width;
+  const scaleY=imgEditorCanvas.height/rect.height;
+  return{x:(e.clientX-rect.left)*scaleX,y:(e.clientY-rect.top)*scaleY};
+}
+
+function editorPointerDown(e){
+  if(editorTool==='sticky')return;
+  e.preventDefault();
+  editorDrawing=true;
+  const p=getCanvasPos(e);
+  editorLastX=p.x;editorLastY=p.y;
+  imgEditorCanvas.setPointerCapture(e.pointerId);
+}
+function editorPointerMove(e){
+  if(!editorDrawing)return;
+  e.preventDefault();
+  const p=getCanvasPos(e);
+  if(editorEraser){
+    editorDrawCtx.save();
+    editorDrawCtx.globalCompositeOperation='destination-out';
+    editorDrawCtx.lineWidth=30;
+    editorDrawCtx.lineCap='round';
+    editorDrawCtx.lineJoin='round';
+    editorDrawCtx.beginPath();
+    editorDrawCtx.moveTo(editorLastX,editorLastY);
+    editorDrawCtx.lineTo(p.x,p.y);
+    editorDrawCtx.stroke();
+    editorDrawCtx.restore();
+  }else{
+    editorDrawCtx.save();
+    editorDrawCtx.globalAlpha=0.35;
+    editorDrawCtx.strokeStyle=editorColor;
+    editorDrawCtx.lineWidth=20;
+    editorDrawCtx.lineCap='round';
+    editorDrawCtx.lineJoin='round';
+    editorDrawCtx.beginPath();
+    editorDrawCtx.moveTo(editorLastX,editorLastY);
+    editorDrawCtx.lineTo(p.x,p.y);
+    editorDrawCtx.stroke();
+    editorDrawCtx.restore();
+  }
+  editorLastX=p.x;editorLastY=p.y;
+  renderEditorComposite();
+}
+function editorPointerUp(e){
+  if(editorDrawing){editorDrawing=false;}
+  renderEditorComposite();
+}
+
+function renderEditorComposite(){
+  imgEditorCtx.clearRect(0,0,imgEditorCanvas.width,imgEditorCanvas.height);
+  imgEditorCtx.drawImage(editorImg,0,0);
+  imgEditorCtx.drawImage(editorDrawLayer,0,0);
+}
+
+function toggleEraser(){
+  editorEraser=!editorEraser;
+  document.getElementById('toolEraser').classList.toggle('active',editorEraser);
+  if(editorEraser){
+    document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(e=>e.classList.remove('active'));
+  }else{
+    document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(e=>{e.classList.toggle('active',e.dataset.color===editorColor);});
+  }
+}
+
+// Pen color selection
+document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(el=>{
+  el.addEventListener('click',()=>{
+    editorColor=el.dataset.color;
+    editorEraser=false;
+    document.getElementById('toolEraser').classList.remove('active');
+    document.querySelectorAll('#imgEditorToolbar .pen-color').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+
+// Sticky notes
+function addStickyNote(){
+  const wrap=document.getElementById('imgEditorCanvas-wrap');
+  const rect=imgEditorCanvas.getBoundingClientRect();
+  const wrapRect=wrap.getBoundingClientRect();
+  const note=document.createElement('div');
+  note.className='sticky-note-el';
+  const sx=rect.left-wrapRect.left+rect.width/2-30;
+  const sy=rect.top-wrapRect.top+rect.height/3;
+  note.style.left=sx+'px';
+  note.style.top=sy+'px';
+  const ta=document.createElement('textarea');
+  ta.placeholder='输入...';
+  ta.rows=2;
+  note.appendChild(ta);
+  const delBtn=document.createElement('div');
+  delBtn.className='sticky-del';
+  delBtn.textContent='×';
+  delBtn.onclick=function(ev){ev.stopPropagation();note.remove();};
+  note.appendChild(delBtn);
+  let dragSX=0,dragSY=0,dragOX=0,dragOY=0,dragging=false;
+  note.addEventListener('pointerdown',function(e){
+    if(e.target.tagName==='TEXTAREA')return;
+    dragging=true;
+    dragSX=e.clientX;dragSY=e.clientY;
+    dragOX=parseFloat(note.style.left);dragOY=parseFloat(note.style.top);
+    note.setPointerCapture(e.pointerId);
+  });
+  note.addEventListener('pointermove',function(e){
+    if(!dragging)return;
+    note.style.left=(dragOX+e.clientX-dragSX)+'px';
+    note.style.top=(dragOY+e.clientY-dragSY)+'px';
+  });
+  note.addEventListener('pointerup',function(e){dragging=false;});
+  note.addEventListener('pointercancel',function(e){dragging=false;});
+  wrap.appendChild(note);
+  setTimeout(()=>ta.focus(),50);
+}
+
+function cancelImgEditor(){
+  document.getElementById('imgEditor').classList.remove('active');
+  document.querySelectorAll('.sticky-note-el').forEach(e=>e.remove());
+}
+
+function saveImgEditor(){
+  const finalC=document.createElement('canvas');
+  finalC.width=imgEditorCanvas.width;
+  finalC.height=imgEditorCanvas.height;
+  const fctx=finalC.getContext('2d');
+  fctx.drawImage(editorImg,0,0);
+  fctx.drawImage(editorDrawLayer,0,0);
+  const canvasRect=imgEditorCanvas.getBoundingClientRect();
+  const scaleX=imgEditorCanvas.width/canvasRect.width;
+  const scaleY=imgEditorCanvas.height/canvasRect.height;
+  document.querySelectorAll('.sticky-note-el').forEach(el=>{
+    const elRect=el.getBoundingClientRect();
+    const cx=(elRect.left-canvasRect.left)*scaleX;
+    const cy=(elRect.top-canvasRect.top)*scaleY;
+    const cw=elRect.width*scaleX;
+    const ch=elRect.height*scaleY;
+    fctx.save();
+    fctx.translate(cx+cw/2,cy+ch/2);
+    fctx.rotate(-0.035);
+    fctx.fillStyle='#fff9c4';
+    fctx.shadowColor='rgba(0,0,0,0.3)';
+    fctx.shadowBlur=8;
+    fctx.fillRect(-cw/2,-ch/2,cw,ch);
+    fctx.shadowBlur=0;
+    const ta=el.querySelector('textarea');
+    const text=ta?ta.value:'';
+    if(text){
+      fctx.fillStyle='#5a4a2a';
+      fctx.font=Math.round(10*scaleX)+'px sans-serif';
+      fctx.textAlign='left';
+      fctx.textBaseline='top';
+      const lines=text.split('\n');
+      lines.forEach((line,i)=>{
+        fctx.fillText(line,-cw/2+6*scaleX,-ch/2+6*scaleY+i*14*scaleX);
+      });
+    }
+    fctx.restore();
+  });
+  noteImg=finalC.toDataURL('image/jpeg',0.85);
+  const p=document.getElementById('noteImgPrev');
+  p.src=noteImg;p.classList.add('show');
+  cancelImgEditor();
+}
+
 renderHome();
 </script>
 </body>
