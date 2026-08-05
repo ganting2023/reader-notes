@@ -2,7 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#c9974a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="阅读拾遗">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <title>📖 阅读拾遗</title>
 <style>
   :root {
@@ -568,6 +575,15 @@ function exportData() {
   a.download = '阅读摘录_' + new Date().toISOString().slice(0,10) + '.json';
   a.click();
   alert('数据已导出！');
+}
+
+// ===== Service Worker 注册（PWA 离线支持）=====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.log('SW failed:', err));
+  });
 }
 
 // 初始渲染
