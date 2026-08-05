@@ -1249,7 +1249,49 @@ function removeBackground(imgData){
   }
 
   tmpCtx.putImageData(id,0,0);
-  return tmpC.toDataURL('image/png');
+
+  // Step 5: Apple-style white outline sticker effect
+  // Create a mask from foreground alpha
+  const maskC=document.createElement('canvas');
+  maskC.width=w;maskC.height=h;
+  const maskCtx=maskC.getContext('2d');
+  const maskImg=maskCtx.createImageData(w,h);
+  const md=maskImg.data;
+  for(let i=0;i<w*h;i++){
+    const a=d[i*4+3];
+    md[i*4]=255;md[i*4+1]=255;md[i*4+2]=255;md[i*4+3]=a;
+  }
+  maskCtx.putImageData(maskImg,0,0);
+
+  // Dilate the mask to create outline (expand foreground by ~3px)
+  const dilateR=3;
+  const dilC=document.createElement('canvas');
+  dilC.width=w;dilC.height=h;
+  const dilCtx=dilC.getContext('2d');
+  dilCtx.filter=`blur(${dilateR}px)`;
+  dilCtx.drawImage(maskC,0,0);
+  // Threshold the blurred mask back to binary-ish for clean edge
+  const dilData=dilCtx.getImageData(0,0,w,h);
+  const dd=dilData.data;
+  for(let i=0;i<w*h*4;i+=4){
+    dd[i]=255;dd[i+1]=255;dd[i+2]=255;dd[i+3]=dd[i+3]>40?255:0;
+  }
+  dilCtx.putImageData(dilData,0,0);
+
+  // Now composite: white outline (dilated mask - original mask) + original foreground
+  const outC=document.createElement('canvas');
+  outC.width=w;outC.height=h;
+  const outCtx=outC.getContext('2d');
+
+  // Draw dilated white mask as the outline base
+  outCtx.drawImage(dilC,0,0);
+
+  // Draw original image on top (only foreground pixels)
+  outCtx.drawImage(tmpC,0,0);
+
+  // Apply soft edge feather for smooth transition
+  outCtx.filter='none';
+  return outC.toDataURL('image/png');
 }
 
 function handleCover(e){
