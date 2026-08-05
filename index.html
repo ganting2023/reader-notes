@@ -510,6 +510,27 @@ function saveNote(){
   save();closeModal('noteModal');renderNotes(b);renderHome();
 }
 
+function openBookModal(){
+  document.getElementById('bookModal').classList.add('active');
+  document.getElementById('inputTitle').value='';
+  document.getElementById('inputAuthor').value='';
+  document.getElementById('inputTags').value='';
+  document.getElementById('coverInput').value='';
+  document.getElementById('coverPrev').classList.remove('show');
+  document.getElementById('coverPrev').src='';
+  coverImg=null;selColor='#7ea8a2';
+  document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected'));
+  const first=document.querySelector('.color-opt[data-c="#7ea8a2"]');if(first)first.classList.add('selected');
+}
+function openNoteModal(){
+  document.getElementById('noteModal').classList.add('active');
+  document.getElementById('noteImgInput').value='';
+  document.getElementById('noteImgPrev').classList.remove('show');
+  document.getElementById('noteImgPrev').src='';
+  document.getElementById('inputQuote').value='';
+  document.getElementById('inputThoughts').value='';
+  noteImg=null;
+}
 function closeModal(id){document.getElementById(id).classList.remove('active');}
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});});
 
