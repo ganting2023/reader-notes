@@ -2179,24 +2179,55 @@ async function aiSearch(query){
 
 // Feature 5: Image OCR
 async function aiOcr(){
-  const cfg=data.aiConfig||{};
-  if(!cfg.apiKey){aiHint();return;}
-  if(!noteImg){alert('请先选择图片');return;}
+  if(!noteImg){showToast('请先选择图片');return;}
   const btn=document.getElementById('aiOcrBtn');
   const loading=document.getElementById('aiOcrLoading');
   btn.style.display='none';
   loading.style.display='block';
-  const result=await callAIVision(noteImg,'请提取图片中的所有文字，保持原文格式。只返回提取的文字内容，不要解释。如果没有文字，返回"未识别到文字"。');
-  loading.style.display='none';
-  btn.style.display='block';
-  if(result&&result.trim()!=='未识别到文字'){
-    const ta=document.getElementById('inputQuote');
-    if(ta.value.trim()){ta.value=ta.value+'\n'+result;}
-    else{ta.value=result;}
-  }else if(result){
-    alert('未识别到文字');
-  }else{
-    alert('OCR 失败，请检查 AI 配置');
+  loading.innerHTML='<span class="spinner"></span>📖 识别中...';
+  try{
+    // Use Tesseract.js — no API key needed!
+    if(!window.Tesseract){
+      loading.innerHTML='<span class="spinner"></span>📦 加载OCR引擎...';
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload=resolve;s.onerror=()=>reject(new Error('load fail'));
+        document.head.appendChild(s);
+      });
+    }
+    const worker=await Tesseract.createWorker(['chi_sim','eng'],1,{
+      logger:m=>{if(m.status==='recognizing')loading.innerHTML='<span class="spinner"></span>📖 识别中 '+Math.round(m.progress*100)+'%';}
+    });
+    const{data}=await worker.recognize(noteImg);
+    await worker.terminate();
+    loading.style.display='none';
+    btn.style.display='block';
+    if(data&&data.text&&data.text.trim()){
+      const ta=document.getElementById('inputQuote');
+      if(ta.value.trim()){ta.value=ta.value+'\n'+data.text.trim();}
+      else{ta.value=data.text.trim();}
+      showToast('识别成功 ✓');
+    }else{
+      showToast('未识别到文字');
+    }
+  }catch(err){
+    console.error('OCR error:',err);
+    loading.style.display='none';
+    btn.style.display='block';
+    // Fallback: try AI vision if configured
+    const cfg=data.aiConfig||{};
+    if(cfg.apiKey){
+      showToast('OCR引擎加载失败，尝试AI识别...');
+      const result=await callAIVision(noteImg,'请提取图片中的所有文字，保持原文格式。只返回提取的文字内容。');
+      if(result){
+        const ta=document.getElementById('inputQuote');
+        if(ta.value.trim()){ta.value=ta.value+'\n'+result;}
+        else{ta.value=result;}
+      }else{showToast('识别失败');}
+    }else{
+      showToast('OCR引擎加载失败');
+    }
   }
 }
 
