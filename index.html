@@ -867,12 +867,15 @@ body,.modal-overlay,.page,.post-card,.book-row,.zine-page-side{transition:backgr
     <label>摘录图片</label>
     <div class="img-upload" onclick="document.getElementById('noteImgInput').click()"><div class="icon">📁</div><p>点击选择图片</p></div>
     <input type="file" id="noteImgInput" accept="image/*" style="display:none" onchange="handleNoteImg(event)">
-    <img class="img-preview" id="noteImgPrev">
+    <div style="position:relative;display:none;" id="noteImgWrapper">
+      <img class="img-preview" id="noteImgPrev" style="margin-bottom:0;">
+      <input type="text" id="noteImgBookTitle" placeholder="书名..." style="position:absolute;bottom:8px;left:8px;background:rgba(255,255,255,.85);border:none;border-radius:6px;padding:3px 10px;font-size:.7rem;font-family:var(--serif);color:var(--text);max-width:60%;backdrop-filter:blur(4px);">
+    </div>
     <button id="aiOcrBtn" class="ai-note-btn ocr" style="display:none;" onclick="aiOcr()">🔍 AI 识别文字</button>
     <div id="aiOcrLoading" class="ai-loading" style="display:none;"><span class="spinner"></span>正在识别文字...</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button class="zine-cover-btn" onclick="insertNoteToken('✨')">✨</button><button class="zine-cover-btn" onclick="insertNoteToken('📍')">📍 地点</button><button class="zine-cover-btn" onclick="insertNoteToken('☀️')">☀️ 天气</button><button class="zine-cover-btn" onclick="setNoteHighlight('#fff2a8')">🟡 高亮</button><button class="zine-cover-btn" onclick="setNoteHighlight('#c9f2e0')">🟢 高亮</button></div>
     <label>摘录的句子</label><textarea class="quote-input" id="inputQuote" placeholder="好句子..."></textarea>
-    <label>感悟</label><textarea class="thoughts-input" id="inputThoughts" placeholder="你的想法..."></textarea>
+    <textarea class="thoughts-input" id="inputThoughts" placeholder="你的想法..."></textarea>
     <div class="ai-note-btns">
       <button class="ai-note-btn" id="aiPolishBtn" onclick="aiPolish()">✨ AI 润色</button>
       <button class="ai-note-btn" id="aiContinueBtn" onclick="aiContinue()">✍ AI 续写</button>
@@ -1310,9 +1313,9 @@ function showNote(bid,idx){
     aiHtml+='<div class="ai-redo" onclick="analyzeNote(\''+bid+'\','+idx+')">重新分析</div></div>';
   }
   document.getElementById('polaroidCard').innerHTML=`
-    ${n.image?`<img src="${n.image}">`:''}
+    ${n.image?`<div style="position:relative;"><img src="${n.image}">${n.imgBookTitle?`<div style="position:absolute;bottom:8px;left:8px;background:rgba(255,255,255,.85);padding:3px 10px;border-radius:6px;font-size:.7rem;font-family:var(--serif);color:var(--text);max-width:60%;backdrop-filter:blur(4px);">${esc(n.imgBookTitle)}</div>`:''}</div>`:''}
     ${n.quote?`<div class="p-quote">"${esc(n.quote)}"</div>`:''}
-    ${n.thoughts?`<div class="p-card"><div class="lbl">✍ 感悟</div><div class="txt">${esc(n.thoughts)}</div></div>`:''}
+    ${n.thoughts?`<div class="p-card"><div class="txt">${esc(n.thoughts)}</div></div>`:''}
     ${aiHtml}
     <div class="p-date">${fmtDate(n.date)}</div>
     <div class="p-actions"><button class="btn-edit" onclick="editNote('${bid}',${idx})">修改</button><button class="btn-del" onclick="delNote('${bid}',${idx})">删除</button><button class="btn-close" onclick="closeNote()">关闭</button></div>`;
@@ -1334,6 +1337,8 @@ function editNote(bid,idx){
   var p=document.getElementById('noteImgPrev');
   document.getElementById('inputQuote').value=n.quote||'';
   document.getElementById('inputThoughts').value=n.thoughts||'';
+  const titleInput=document.getElementById('noteImgBookTitle');if(titleInput)titleInput.value=n.imgBookTitle||b.title||'';
+  const wEl=document.getElementById('noteImgWrapper');if(wEl&&n.image)wEl.style.display='block';
   document.getElementById('noteModal').dataset.editIdx=idx;
   document.getElementById('noteModal').dataset.editBookId=bid;
 }
@@ -1501,6 +1506,7 @@ function saveBook(){
 }
 function saveNote(){
   const quote=document.getElementById('inputQuote').value.trim(),thoughts=document.getElementById('inputThoughts').value.trim();
+  const imgBookTitle=document.getElementById('noteImgBookTitle')?document.getElementById('noteImgBookTitle').value.trim():'';
   if(!quote&&!thoughts&&!noteImg){alert('至少写点什么');return;}
   const modal=document.getElementById('noteModal');
   const editIdx=modal.dataset.editIdx;
@@ -1509,10 +1515,10 @@ function saveNote(){
     const b=data.books.find(x=>x.id===editBid);if(!b)return;
     b.notes=b.notes||[];
     const idx=parseInt(editIdx);
-    if(b.notes[idx]){b.notes[idx]={image:noteImg,quote,thoughts,highlight:document.getElementById('inputQuote').dataset.highlight||'',date:b.notes[idx].date};}
+    if(b.notes[idx]){b.notes[idx]={image:noteImg,quote,thoughts,highlight:document.getElementById('inputQuote').dataset.highlight||'',date:b.notes[idx].date,imgBookTitle:imgBookTitle||b.notes[idx].imgBookTitle||''};}
   }else{
     const b=data.books.find(x=>x.id===currentBookId);if(!b)return;
-    b.notes=b.notes||[];b.notes.unshift({image:noteImg,quote,thoughts,highlight:document.getElementById('inputQuote').dataset.highlight||'',date:new Date().toISOString()});
+    b.notes=b.notes||[];b.notes.unshift({image:noteImg,quote,thoughts,highlight:document.getElementById('inputQuote').dataset.highlight||'',date:new Date().toISOString(),imgBookTitle});
   }
   save();closeModal('noteModal');
   const bid=currentBookId;
@@ -1549,13 +1555,15 @@ function openNoteModal(){
   document.getElementById('noteImgInput').value='';
   document.getElementById('noteImgPrev').classList.remove('show');
   document.getElementById('noteImgPrev').src='';
+  const wEl=document.getElementById('noteImgWrapper');if(wEl)wEl.style.display='none';
+  const btInput=document.getElementById('noteImgBookTitle');if(btInput)btInput.value='';
   var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='none';
   var ol=document.getElementById('aiOcrLoading');if(ol)ol.style.display='none';
   document.getElementById('inputQuote').value='';
   document.getElementById('inputThoughts').value='';
   noteImg=null;
 }
-function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=Math.round(h*mx/w);w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='block';};img.src=ev.target.result;};r.readAsDataURL(f);}
+function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=Math.round(h*mx/w);w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');const wEl=document.getElementById('noteImgWrapper');if(wEl)wEl.style.display='block';var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='block';};img.src=ev.target.result;};r.readAsDataURL(f);}
 function insertNoteToken(token){const el=document.getElementById('inputThoughts');el.value+=(el.value?' ':'')+token+' ';el.focus();}
 function setNoteHighlight(color){const el=document.getElementById('inputQuote');el.style.background=color;el.dataset.highlight=color;el.focus();}
 function closeModal(id){document.getElementById(id).classList.remove('active');}
