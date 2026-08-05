@@ -1,13 +1,13 @@
 {
-  "name": "Miracle",
-  "short_name": "Miracle",
+  "name": "Saoire",
+  "short_name": "Saoire",
   "description": "阅读笔记 · 记录字里行间的光",
   "start_url": "/reader-notes/",
   "scope": "/reader-notes/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#fafaf8",
-  "theme_color": "#7ea8a2",
+  "theme_color": "#a0c4e8",
   "icons": [
     {
       "src": "icon-192.png",

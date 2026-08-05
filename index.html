@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Miracle">
+<meta name="apple-mobile-web-app-title" content="Saoire">
 <link rel="manifest" href="manifest.json?v3">
 <link rel="apple-touch-icon" href="icon-192.png?v3">
 <link rel="icon" type="image/png" href="icon-192.png?v3">
-<title>Miracle</title>
+<title>Saoire</title>
 <style>
 :root{
   --bg:#ffffff;
@@ -329,7 +329,7 @@ input,textarea{font-family:inherit;}
 <!-- 主页 -->
 <div class="page active" id="pageHome">
   <div class="app-header">
-    <h1>Miracle</h1>
+    <h1>Saoire</h1>
     <div class="sub">R E A D I N G &nbsp; J O U R N A L</div>
   </div>
   <div class="add-btn-wrap">
@@ -854,7 +854,7 @@ function closeModal(id){document.getElementById(id).classList.remove('active');}
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});});
 
 let ec=0;
-document.querySelector('#pageHome .app-header h1').addEventListener('click',()=>{ec++;if(ec>=3){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Miracle_'+new Date().toISOString().slice(0,10)+'.json';a.click();ec=0;}});
+document.querySelector('#pageHome .app-header h1').addEventListener('click',()=>{ec++;if(ec>=3){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Saoire_'+new Date().toISOString().slice(0,10)+'.json';a.click();ec=0;}});
 
 // 强制清除旧 SW 缓存
 if('serviceWorker' in navigator){
