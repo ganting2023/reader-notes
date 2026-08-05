@@ -632,6 +632,7 @@ input,textarea{font-family:inherit;}
     <div class="img-upload" onclick="document.getElementById('coverInput').click()"><div class="icon">📁</div><p>点击选择封面</p></div>
     <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="handleCover(event)">
     <img class="img-preview" id="coverPrev">
+    <button class="btn-add" id="aiCutoutBtn" style="display:none;min-height:36px;font-size:0.75rem;margin-top:8px;" onclick="aiCutoutCover()">✨ AI 智能抠图</button>
     <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('bookModal')">取消</button><button class="btn-save" onclick="saveBook()">保存</button></div>
   </div>
 </div>
@@ -860,8 +861,8 @@ function editBook(){
   coverImg=b.coverImg||null;
   document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected'));
   const co=document.querySelector(`.color-opt[data-c="${selColor}"]`);if(co)co.classList.add('selected');
-  if(coverImg){const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');}
-  else{document.getElementById('coverPrev').classList.remove('show');}
+  if(coverImg){const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');var cb=document.getElementById('aiCutoutBtn');if(cb)cb.style.display='flex';}
+  else{document.getElementById('coverPrev').classList.remove('show');var cb=document.getElementById('aiCutoutBtn');if(cb)cb.style.display='none';}
   document.getElementById('bookModal').dataset.editId=pressBookId;
   document.querySelector('#bookModal h2').textContent='修改书';
 }
@@ -1193,33 +1194,43 @@ function handleCover(e){
   const r=new FileReader();
   r.onload=ev=>{
     const img=new Image();
-    img.onload=async()=>{
-      document.getElementById('coverPrev').classList.remove('show');
-      const loading=document.createElement('div');
-      loading.className='cutout-loading show';
-      loading.id='cutoutLoading';
-      loading.innerHTML='<span class="spinner"></span>🤖 AI 抠图中...';
-      document.querySelector('#bookModal .img-upload').after(loading);
-      try{
-        coverImg=await removeBackground(img);
-        const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
-      }catch(err){
-        console.error('AI抠图失败:',err);
-        // Fallback: use original image without background removal
-        const mx=600;let w=img.width,h=img.height;
-        if(w>mx){h=Math.round(h*mx/w);w=mx;}
-        const c=document.createElement('canvas');c.width=w;c.height=h;
-        c.getContext('2d').drawImage(img,0,0,w,h);
-        coverImg=c.toDataURL('image/png');
-        const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
-        showToast('AI模型加载失败，使用原图');
-      }finally{
-        const cl=document.getElementById('cutoutLoading');if(cl)cl.remove();
-      }
+    img.onload=()=>{
+      // Direct: use original image immediately, no AI processing
+      const mx=800;let w=img.width,h=img.height;
+      if(w>mx){h=Math.round(h*mx/w);w=mx;}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      coverImg=c.toDataURL('image/jpeg',0.9);
+      const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
+      // Show AI cutout button
+      var cb=document.getElementById('aiCutoutBtn');if(cb)cb.style.display='flex';
     };
     img.src=ev.target.result;
   };
   r.readAsDataURL(f);
+}
+async function aiCutoutCover(){
+  if(!coverImg){showToast('请先选择封面图片');return;}
+  var cb=document.getElementById('aiCutoutBtn');if(cb)cb.style.display='none';
+  const loading=document.createElement('div');
+  loading.className='cutout-loading show';
+  loading.id='cutoutLoading';
+  loading.innerHTML='<span class="spinner"></span>🤖 AI 抠图中...';
+  document.querySelector('#bookModal .img-upload').after(loading);
+  try{
+    const tmpImg=new Image();
+    tmpImg.src=coverImg;
+    await new Promise(r=>{tmpImg.onload=r;});
+    coverImg=await removeBackground(tmpImg);
+    const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
+    showToast('AI抠图完成 ✨');
+  }catch(err){
+    console.error('AI抠图失败:',err);
+    showToast('AI抠图失败，保持原图');
+    if(cb)cb.style.display='flex';
+  }finally{
+    const cl=document.getElementById('cutoutLoading');if(cl)cl.remove();
+  }
 }
 function saveBook(){
   const title=document.getElementById('inputTitle').value.trim();if(!title){showToast('请输入书名');return;}
