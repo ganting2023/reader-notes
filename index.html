@@ -1094,13 +1094,15 @@ async function getBgRemover(){
   if(!window.transformers){
     await new Promise((resolve,reject)=>{
       const s=document.createElement('script');
-      s.src='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0';
+      s.src='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.0';
       s.onload=resolve;s.onerror=()=>reject(new Error('Failed to load Transformers.js'));
       document.head.appendChild(s);
     });
   }
-  const {pipeline}=window.transformers;
-  _bgRemover=await pipeline('background-removal','Xenova/modnet',{quantized:true});
+  const {pipeline,env}=window.transformers;
+  // Allow remote models
+  if(env)env.allowLocalModels=false;
+  _bgRemover=await pipeline('background-removal','onnx-community/RMBG-1.4',{quantized:true});
   _bgRemoverLoading=false;
   return _bgRemover;
 }
@@ -1108,23 +1110,84 @@ async function getBgRemover(){
 async function removeBackground(imgElement){
   const remover=await getBgRemover();
   if(!remover)throw new Error('Model still loading');
-  // Run AI inference
-  const out=await remover(imgElement);
-  // out is an HTMLCanvasElement or Blob URL with transparent background
+  // Run AI inference — input must be a URL or canvas
+  // Convert img element to canvas first for best compatibility
+  const ow=imgElement.naturalWidth||imgElement.width,oh=imgElement.naturalHeight||imgElement.height;
+  const mx=800;
+  let w=ow,h=oh;
+  if(w>mx||h>mx){const s=mx/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
+  const inC=document.createElement('canvas');
+  inC.width=w;inC.height=h;
+  inC.getContext('2d').drawImage(imgElement,0,0,w,h);
+  // Pass canvas to model
+  const out=await remover(inC);
+  // Output is an array of RawImage objects; get the mask
   let outCanvas;
-  if(out instanceof HTMLCanvasElement){
+  if(Array.isArray(out)&&out.length>0){
+    const result=out[0];
+    // result may have .mask (RawImage) or be a canvas/image
+    if(result.canvas){
+      outCanvas=result.canvas;
+    }else if(result.mask){
+      // mask is a RawImage — convert to canvas
+      const mask=result.mask;
+      outCanvas=document.createElement('canvas');
+      outCanvas.width=mask.width;outCanvas.height=mask.height;
+      const mctx=outCanvas.getContext('2d');
+      const mImgData=mctx.createImageData(mask.width,mask.height);
+      // mask.data is Uint8ClampedArray of [r,g,b,r,g,b,...] or RGBA
+      if(mask.data.length===mask.width*mask.height*4){
+        mImgData.data.set(mask.data);
+      }else{
+        // RGB only, convert to RGBA
+        for(let i=0,j=0;i<mask.data.length;i+=3,j+=4){
+          mImgData.data[j]=mask.data[i];
+          mImgData.data[j+1]=mask.data[i+1];
+          mImgData.data[j+2]=mask.data[i+2];
+          mImgData.data[j+3]=255;
+        }
+      }
+      mctx.putImageData(mImgData,0,0);
+      // Now composite: original image masked by this mask
+      const compC=document.createElement('canvas');
+      compC.width=w;compC.height=h;
+      const compCtx=compC.getContext('2d');
+      // Draw original
+      compCtx.drawImage(inC,0,0);
+      // Get original pixels and mask pixels
+      const origData=compCtx.getImageData(0,0,w,h);
+      const maskData=mctx.getImageData(0,0,mask.width,mask.height);
+      // Apply mask as alpha — where mask is white = keep, black = transparent
+      for(let i=0;i<w*h;i++){
+        const maskAlpha=maskData.data[i*4]/255; // 0..1
+        origData.data[i*4+3]=Math.round(origData.data[i*4+3]*maskAlpha);
+      }
+      compCtx.putImageData(origData,0,0);
+      outCanvas=compC;
+    }else if(result.save){
+      // RawImage directly — draw to canvas
+      outCanvas=document.createElement('canvas');
+      outCanvas.width=result.width;outCanvas.height=result.height;
+      const ctx=outCanvas.getContext('2d');
+      const idata=ctx.createImageData(result.width,result.height);
+      if(result.data.length===result.width*result.height*4){
+        idata.data.set(result.data);
+      }else{
+        for(let i=0,j=0;i<result.data.length;i+=3,j+=4){
+          idata.data[j]=result.data[i];
+          idata.data[j+1]=result.data[i+1];
+          idata.data[j+2]=result.data[i+2];
+          idata.data[j+3]=255;
+        }
+      }
+      ctx.putImageData(idata,0,0);
+    }else{
+      throw new Error('Unknown output format');
+    }
+  }else if(out instanceof HTMLCanvasElement){
     outCanvas=out;
-  }else if(out.canvas){
-    outCanvas=out.canvas;
   }else{
-    // If it's a data URL or blob, draw to canvas
-    outCanvas=document.createElement('canvas');
-    const ctx=outCanvas.getContext('2d');
-    const tmpImg=new Image();
-    tmpImg.src=typeof out==='string'?out:out.url||URL.createObjectURL(out);
-    await new Promise(r=>{tmpImg.onload=r;});
-    outCanvas.width=tmpImg.width;outCanvas.height=tmpImg.height;
-    ctx.drawImage(tmpImg,0,0);
+    throw new Error('Unexpected output: '+typeof out);
   }
   // Apply Apple sticker white outline
   return applyStickerOutline(outCanvas);
