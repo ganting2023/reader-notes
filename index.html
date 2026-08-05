@@ -307,6 +307,29 @@ input,textarea{font-family:inherit;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 
+/* ===== 日常子标签 ===== */
+.daily-subtabs{display:flex;gap:8px;padding:0 16px 12px;}
+.daily-subtab{padding:6px 20px;border-radius:20px;font-size:0.82rem;font-weight:500;transition:all 0.25s;background:transparent;color:var(--text-mid);border:none;cursor:pointer;}
+.daily-subtab.active{background:var(--accent);color:#fff;}
+
+/* ===== 相簿 ===== */
+.album-section{margin-bottom:32px;}
+.album-month-header{font-family:var(--serif);font-size:1.1rem;color:var(--text);margin-bottom:12px;padding:0 4px;display:flex;align-items:center;gap:8px;}
+.album-month-header .count{font-size:0.7rem;color:var(--text-mid);font-weight:normal;}
+.album-grid{columns:2;column-gap:8px;padding:0 4px;}
+.album-photo{break-inside:avoid;margin-bottom:8px;border-radius:8px;overflow:hidden;border:6px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.08);transition:transform 0.2s;cursor:pointer;background:#fff;}
+.album-photo:nth-child(3n){transform:rotate(-2deg);}
+.album-photo:nth-child(3n+1){transform:rotate(1deg);}
+.album-photo:nth-child(3n+2){transform:rotate(-1deg);}
+.album-photo:active{transform:scale(0.95);}
+.album-photo img{width:100%;display:block;}
+
+/* ===== 照片查看器 ===== */
+.photo-viewer{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,0.9);align-items:center;justify-content:center;padding:24px;}
+.photo-viewer.active{display:flex;}
+.photo-viewer img{max-width:100%;max-height:100%;border-radius:8px;object-fit:contain;}
+.photo-viewer .close{position:absolute;top:calc(env(safe-area-inset-top,0px) + 16px);right:20px;font-size:1.8rem;color:#fff;cursor:pointer;background:rgba(0,0,0,0.5);width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+
 /* ===== 日常页 ===== */
 .daily-feed{max-width:600px;margin:0 auto;padding:0 16px;}
 .post-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,0.02);}
@@ -486,16 +509,25 @@ input,textarea{font-family:inherit;}
   <div class="app-header">
     <h1>日常</h1>
     <div class="sub">D A I L Y &nbsp; L I F E</div>
-    <div class="header-search-btn" onclick="toggleDailySearch()">🔍</div>
   </div>
-  <div class="search-bar" id="dailySearchBar">
-    <input type="text" id="dailySearchInput" placeholder="搜索动态内容..." oninput="searchDaily(this.value)">
+  <!-- Sub-tabs -->
+  <div class="daily-subtabs">
+    <button class="daily-subtab active" data-subtab="feed" onclick="switchDailySubtab('feed')">动态</button>
+    <button class="daily-subtab" data-subtab="album" onclick="switchDailySubtab('album')">相簿</button>
   </div>
-  <div class="add-btn-wrap">
-    <button class="btn-add" onclick="openPostModal()">+ 发布动态</button>
+  <!-- Feed -->
+  <div id="dailyFeedWrap">
+    <div class="search-bar" id="dailySearchBar">
+      <input type="text" id="dailySearchInput" placeholder="搜索动态内容..." oninput="searchDaily(this.value)">
+    </div>
+    <div class="add-btn-wrap">
+      <button class="btn-add" onclick="openPostModal()">+ 发布动态</button>
+    </div>
+    <div class="daily-feed" id="dailyFeed"></div>
+    <div id="emptyDaily" class="empty" style="display:none;"><div class="icon">🌳</div><p>点击「+ 发布动态」分享你的日常 ✨</p></div>
   </div>
-  <div class="daily-feed" id="dailyFeed"></div>
-  <div id="emptyDaily" class="empty" style="display:none;"><div class="icon">🌳</div><p>点击「+ 发布动态」分享你的日常 ✨</p></div>
+  <!-- Album -->
+  <div id="albumWrap" style="display:none;"></div>
 </div>
 
 <!-- 个人 -->
@@ -636,6 +668,12 @@ input,textarea{font-family:inherit;}
     <div class="press-menu-divider"></div>
     <div class="press-menu-item" onclick="closePressMenu()" style="justify-content:center;color:var(--text-mid);">取消</div>
   </div>
+</div>
+
+<!-- 照片查看器 -->
+<div class="photo-viewer" id="photoViewer">
+  <div class="close" onclick="closePhoto()">✕</div>
+  <img id="photoViewerImg" src="">
 </div>
 
 <!-- 发帖弹窗 -->
@@ -1268,6 +1306,54 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js?v5').catch(()=>{});
   });
 }
+// ===== 日常子标签 =====
+function switchDailySubtab(tab){
+  document.querySelectorAll('.daily-subtab').forEach(e=>e.classList.remove('active'));
+  document.querySelector('[data-subtab="'+tab+'"]').classList.add('active');
+  document.getElementById('dailyFeedWrap').style.display=tab==='feed'?'block':'none';
+  document.getElementById('albumWrap').style.display=tab==='album'?'block':'none';
+  if(tab==='album')renderAlbum();
+}
+function renderAlbum(){
+  const wrap=document.getElementById('albumWrap');
+  const posts=(data.posts||[]).filter(p=>p.images&&p.images.length>0);
+  if(posts.length===0){
+    wrap.innerHTML='<div class="empty"><div class="icon">📷</div><p>还没有照片，发条动态试试吧</p></div>';
+    return;
+  }
+  const byMonth={};
+  posts.forEach(p=>{
+    const d=new Date(p.date);
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    if(!byMonth[key])byMonth[key]=[];
+    p.images.forEach(img=>byMonth[key].push({img,date:p.date,text:p.text}));
+  });
+  const months=Object.keys(byMonth).sort().reverse();
+  const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  let html='';
+  months.forEach(m=>{
+    const [y,mo]=m.split('-');
+    const photos=byMonth[m];
+    const monthLabel=parseInt(y)+'年'+monthNames[parseInt(mo)-1];
+    html+='<div class="album-section">';
+    html+='<div class="album-month-header">'+monthLabel+' <span class="count">'+photos.length+'张</span></div>';
+    html+='<div class="album-grid">';
+    photos.forEach((ph,i)=>{
+      html+='<div class="album-photo" onclick="viewPhoto(\''+ph.img+'\')"><img src="'+ph.img+'" loading="lazy"></div>';
+    });
+    html+='</div></div>';
+  });
+  wrap.innerHTML=html;
+}
+function viewPhoto(src){
+  const v=document.getElementById('photoViewer');
+  document.getElementById('photoViewerImg').src=src;
+  v.classList.add('active');
+}
+function closePhoto(){
+  document.getElementById('photoViewer').classList.remove('active');
+}
+
 // ===== 日常功能 =====
 let postImgs=[],postVideo=null;
 function openPostModal(mode){
