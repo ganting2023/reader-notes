@@ -657,6 +657,25 @@ body.theme-lavender{--bg:#f3eff7;--card:#ffffff;--text:#3a3340;--text-mid:#9088a
 .zine-cover-btn{padding:4px 12px;border-radius:14px;font-size:.7rem;background:rgba(0,0,0,.04);color:var(--text-mid);border:none;cursor:pointer;}
 .zine-manual-btn{padding:4px 12px;border-radius:14px;font-size:.7rem;background:var(--accent);color:#fff;border:none;cursor:pointer;}
 .zine-pick-photo{transition:border-color .2s;}
+.zine-title-row{display:flex;align-items:center;gap:8px;width:100%;max-width:520px;padding:8px 16px 0;box-sizing:border-box;}
+.zine-title-input{flex:1;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);font-family:var(--serif);font-size:.9rem;padding:6px 2px;outline:none;}
+.zine-title-input:focus{border-bottom-color:var(--accent);}
+.zine-book,.zine-page-side{will-change:transform;transform-style:preserve-3d;}
+.zine-book{touch-action:pan-y;cursor:grab;}
+.zine-book.is-dragging{cursor:grabbing;}
+.zine-page-side{box-shadow:inset 0 0 18px rgba(80,60,40,.08),0 3px 12px rgba(40,30,20,.08);}
+.post-modal-progress{display:none;align-items:center;gap:8px;margin:8px 0;color:var(--text-mid);font-size:.72rem;}
+.post-modal-progress.show{display:flex;}
+.post-progress-track{height:5px;flex:1;background:var(--line);border-radius:5px;overflow:hidden;}
+.post-progress-bar{height:100%;width:0;background:var(--accent);transition:width .2s;}
+.post-img-thumbs{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 12px;}
+.post-img-thumbs .thumb{position:relative;width:58px;height:58px;border-radius:9px;overflow:hidden;border:2px solid transparent;cursor:grab;}
+.post-img-thumbs .thumb.dragging{opacity:.45;border-color:var(--accent);}
+.post-img-thumbs .thumb img{width:100%;height:100%;object-fit:cover;}
+.post-img-thumbs .thumb .rm,.post-video-thumb .rm{position:absolute;right:2px;top:2px;width:20px;height:20px;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:11px;cursor:pointer;}
+.post-modal-preview{font-size:.72rem;color:var(--text-mid);}
+body,.modal-overlay,.page,.post-card,.book-row,.zine-page-side{transition:background-color .35s,color .35s,border-color .35s,box-shadow .35s;}
+@media(max-width:600px){.zine-month-selector{padding-left:12px;padding-right:12px}.zine-title-row{padding-left:12px;padding-right:12px}.zine-book-wrapper{max-width:100%;}.zine-page-front-page .month-title{font-size:1.15rem;letter-spacing:2px}.post-img-thumbs .thumb{width:64px;height:64px;}}
 </style>
 </head>
 <body>
@@ -743,6 +762,13 @@ body.theme-lavender{--bg:#f3eff7;--card:#ffffff;--text:#3a3340;--text-mid:#9088a
     <div class="profile-stats" id="profileStats"></div>
     <textarea class="profile-bio" id="profileBioInput" placeholder="写一句签名吧..."></textarea>
     <button class="profile-save-btn" onclick="saveProfile()">保存</button>
+    <div class="profile-tools" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+      <button class="zine-cover-btn" style="padding:10px" onclick="openStickerWorkshop()">🪄 图片工坊</button>
+      <button class="zine-cover-btn" style="padding:10px" onclick="showYearAgo()">🌷 往年今日</button>
+      <button class="zine-cover-btn" style="padding:10px" onclick="exportHighlights()">✍️ 作文素材</button>
+      <button class="zine-cover-btn" style="padding:10px" onclick="exportMD()">📦 导出备份</button>
+      <button class="zine-cover-btn" style="padding:10px;grid-column:1/-1" onclick="configurePrivateLock()">🔒 私密锁设置</button>
+    </div>
     
     <!-- AI Settings -->
     <div class="ai-config-section">
@@ -844,6 +870,7 @@ body.theme-lavender{--bg:#f3eff7;--card:#ffffff;--text:#3a3340;--text-mid:#9088a
     <img class="img-preview" id="noteImgPrev">
     <button id="aiOcrBtn" class="ai-note-btn ocr" style="display:none;" onclick="aiOcr()">🔍 AI 识别文字</button>
     <div id="aiOcrLoading" class="ai-loading" style="display:none;"><span class="spinner"></span>正在识别文字...</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0"><button class="zine-cover-btn" onclick="insertNoteToken('✨')">✨</button><button class="zine-cover-btn" onclick="insertNoteToken('📍')">📍 地点</button><button class="zine-cover-btn" onclick="insertNoteToken('☀️')">☀️ 天气</button><button class="zine-cover-btn" onclick="setNoteHighlight('#fff2a8')">🟡 高亮</button><button class="zine-cover-btn" onclick="setNoteHighlight('#c9f2e0')">🟢 高亮</button></div>
     <label>摘录的句子</label><textarea class="quote-input" id="inputQuote" placeholder="好句子..."></textarea>
     <label>感悟</label><textarea class="thoughts-input" id="inputThoughts" placeholder="你的想法..."></textarea>
     <div class="ai-note-btns">
@@ -884,6 +911,8 @@ body.theme-lavender{--bg:#f3eff7;--card:#ffffff;--text:#3a3340;--text-mid:#9088a
     <div class="img-upload" onclick="document.getElementById('postImgInput').click()"><div class="icon">📁</div><p>点击选择图片</p></div>
     <input type="file" id="postImgInput" accept="image/*" multiple style="display:none" onchange="handlePostImgs(event)">
     <div class="post-img-thumbs" id="postThumbs"></div>
+    <div class="post-modal-progress" id="postImgProgress"><span id="postImgProgressText">正在处理图片…</span><div class="post-progress-track"><div class="post-progress-bar" id="postImgProgressBar"></div></div></div>
+    <div class="post-modal-preview" id="postImgHint">支持拖拽排序，点击 × 快速删除；图片会自动压缩后保存在本地</div>
     <label>视频（可选，仅1个）</label>
     <div class="img-upload" onclick="document.getElementById('postVideoInput').click()"><div class="icon">🎬</div><p>点击选择视频</p></div>
     <input type="file" id="postVideoInput" accept="video/*" style="display:none" onchange="handlePostVideo(event)">
@@ -1480,10 +1509,10 @@ function saveNote(){
     const b=data.books.find(x=>x.id===editBid);if(!b)return;
     b.notes=b.notes||[];
     const idx=parseInt(editIdx);
-    if(b.notes[idx]){b.notes[idx]={image:noteImg,quote,thoughts,date:b.notes[idx].date};}
+    if(b.notes[idx]){b.notes[idx]={image:noteImg,quote,thoughts,highlight:document.getElementById('inputQuote').dataset.highlight||'',date:b.notes[idx].date};}
   }else{
     const b=data.books.find(x=>x.id===currentBookId);if(!b)return;
-    b.notes=b.notes||[];b.notes.unshift({image:noteImg,quote,thoughts,date:new Date().toISOString()});
+    b.notes=b.notes||[];b.notes.unshift({image:noteImg,quote,thoughts,highlight:document.getElementById('inputQuote').dataset.highlight||'',date:new Date().toISOString()});
   }
   save();closeModal('noteModal');
   const bid=currentBookId;
@@ -1527,6 +1556,8 @@ function openNoteModal(){
   noteImg=null;
 }
 function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=Math.round(h*mx/w);w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');var ob=document.getElementById('aiOcrBtn');if(ob)ob.style.display='block';};img.src=ev.target.result;};r.readAsDataURL(f);}
+function insertNoteToken(token){const el=document.getElementById('inputThoughts');el.value+=(el.value?' ':'')+token+' ';el.focus();}
+function setNoteHighlight(color){const el=document.getElementById('inputQuote');el.style.background=color;el.dataset.highlight=color;el.focus();}
 function closeModal(id){document.getElementById(id).classList.remove('active');}
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('active');});});
 
@@ -1537,7 +1568,7 @@ document.querySelector('#pageHome .app-header h1').addEventListener('click',()=>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{
     regs.forEach(r=>r.unregister());
-    navigator.serviceWorker.register('sw.js?v6').catch(()=>{});
+    navigator.serviceWorker.register('sw.js?v7').catch(()=>{});
   });
 }
 // ===== 日常子标签 =====
@@ -1584,13 +1615,19 @@ function renderZine(){
   if(!zineState.monthKey||!byMonth[zineState.monthKey])zineState.monthKey=months[0];
   
   // Render month selector
-  selector.innerHTML=months.map(m=>{
+  const savedTitle=(data.zineTitles||{})[zineState.monthKey]||'我的 '+zineState.monthKey+' Zine';
+  selector.innerHTML='<div class="zine-title-row"><span style="font-size:.75rem;color:var(--text-mid)">标题</span><input class="zine-title-input" id="zineTitleInput" value="'+esc(savedTitle)+'" oninput="saveZineTitle(this.value)"></div>'+months.map(m=>{
     const [y,mo]=m.split('-');
     const isActive=m===zineState.monthKey?' active':'';
     return '<button class="zine-month-chip'+isActive+'" onclick="switchZineMonth(\''+m+'\')">'+y+' '+monthNamesCN[parseInt(mo)-1]+'</button>';
-  }).join('')+'<button class="zine-manual-btn" onclick="openManualZineBuilder()">✏️ 手动建册</button><button class="zine-cover-btn" onclick="document.getElementById(\'zineCoverInput\').click()">📷 封面</button><input type="file" id="zineCoverInput" accept="image/*" style="display:none" onchange="uploadZineCover(event)">';
+  }).join('')+'<button class="zine-manual-btn" onclick="openManualZineBuilder()">✏️ 手动建册</button><button class="zine-cover-btn" onclick="document.getElementById(\'zineCoverInput\').click()">📷 封面</button><button class="zine-cover-btn" onclick="document.getElementById(\'zineBackCoverInput\').click()">📷 封底</button><input type="file" id="zineCoverInput" accept="image/*" style="display:none" onchange="uploadZineCover(event)"><input type="file" id="zineBackCoverInput" accept="image/*" style="display:none" onchange="uploadZineBackCover(event)">';
   
   renderZineBook();
+}
+function saveZineTitle(title){
+  if(!zineState.monthKey)return;
+  if(!data.zineTitles)data.zineTitles={}; data.zineTitles[zineState.monthKey]=title.trim()||('我的 '+zineState.monthKey+' Zine'); save();
+  const cover=zineState.pages&&zineState.pages.find(p=>p.type==='cover'); if(cover){cover.title=data.zineTitles[zineState.monthKey];document.querySelectorAll('#zineBook .month-title').forEach(el=>el.textContent=cover.title);}
 }
 
 function switchZineMonth(monthKey){
@@ -1613,9 +1650,10 @@ function buildZinePages(monthKey){
   // Page 1: Cover
   pages.push({
     type:'cover',
-    title:monthNamesEN[parseInt(mo)-1]+' '+y,
+    title:(data.zineTitles||{})[monthKey]||monthNamesEN[parseInt(mo)-1]+' '+y,
     sub:monthNamesCN[parseInt(mo)-1],
-    count:md.photos.length+' photos'
+    count:md.photos.length+' photos',
+    coverImg:(data.covers||{})[monthKey]||''
   });
   
   // Page 2: Intro text (monthly essay)
@@ -1715,7 +1753,8 @@ function renderZinePageContent(pg){
   if(!pg)return '';
   let inner='';
   if(pg.type==='cover'){
-    inner='<div class="zine-page-front-page" style="width:100%;height:100%;border-radius:inherit;">';
+    const coverStyle=pg.coverImg?"background:linear-gradient(135deg,rgba(126,168,162,.3),rgba(193,166,175,.3)),url('"+pg.coverImg+"') center/cover;":"";
+    inner='<div class="zine-page-front-page" style="width:100%;height:100%;border-radius:inherit;'+coverStyle+'">';
     inner+='<div class="month-title">'+pg.title+'</div>';
     inner+='<div class="month-sub">'+pg.sub+'</div>';
     inner+='<div class="month-photos-count">'+pg.count+'</div>';
@@ -1743,7 +1782,9 @@ function renderZinePageContent(pg){
     }
     inner+='</div>';
   }else if(pg.type==='end'){
-    inner='<div class="zine-page-front-page" style="width:100%;height:100%;border-radius:inherit;">';
+    const backImg=(data.backCovers||{})[zineState.monthKey]||'';
+    const backStyle=backImg?"background:linear-gradient(135deg,rgba(126,168,162,.3),rgba(193,166,175,.3)),url('"+backImg+"') center/cover;":"";
+    inner='<div class="zine-page-front-page" style="width:100%;height:100%;border-radius:inherit;'+backStyle+'">';
     inner+='<div class="month-title" style="font-size:1rem;">'+pg.title+'</div>';
     inner+='<div class="month-sub">'+pg.sub+'</div>';
     inner+='<div class="month-photos-count">'+pg.count+'</div>';
@@ -1877,28 +1918,27 @@ function openPostModal(mode){
   document.querySelector('#postModal h2').textContent='发布动态';
   delete document.getElementById('postModal').dataset.editId;
 }
-function handlePostImgs(e){
-  const files=Array.from(e.target.files||[]);
-  files.forEach((f,idx)=>{
-    if(postImgs.length>=9)return;
-    const r=new FileReader();
-    r.onload=ev=>{
-      const img=new Image();
-      img.onload=()=>{
-        if(postImgs.length>=9)return;
-        const c=document.createElement('canvas');
-        let w=img.width,h=img.height;const mx=1000;
-        if(w>mx){h=Math.round(h*mx/w);w=mx;}
-        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
-        postImgs.push(c.toDataURL('image/jpeg',0.8));
-        renderPostThumbs();
-      };
-      img.onerror=()=>{ console.error('Failed to load image:',f.name); };
-      img.src=ev.target.result;
-    };
-    r.onerror=()=>{ console.error('Failed to read file:',f.name); };
-    r.readAsDataURL(f);
+let postImgProcessing=false;
+function compressPostImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader(); reader.onerror=reject;
+    reader.onload=ev=>{const img=new Image(); img.onerror=reject; img.onload=()=>{
+      const max=1200,scale=Math.min(1,max/Math.max(img.width,img.height));
+      const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.width*scale)); c.height=Math.max(1,Math.round(img.height*scale));
+      c.getContext('2d',{alpha:false}).drawImage(img,0,0,c.width,c.height); resolve(c.toDataURL('image/jpeg',0.78));
+    }; img.src=ev.target.result;}; reader.readAsDataURL(file);
   });
+}
+async function handlePostImgs(e){
+  if(postImgProcessing)return;
+  const files=Array.from(e.target.files||[]).slice(0,Math.max(0,9-postImgs.length)); if(!files.length)return;
+  postImgProcessing=true;
+  const progress=document.getElementById('postImgProgress'),bar=document.getElementById('postImgProgressBar'),txt=document.getElementById('postImgProgressText'); progress.classList.add('show');
+  for(let i=0;i<files.length;i++){
+    try{postImgs.push(await compressPostImage(files[i]));}catch(err){console.warn('图片处理失败',files[i].name,err);}
+    bar.style.width=Math.round((i+1)/files.length*100)+'%'; txt.textContent='正在处理 '+(i+1)+' / '+files.length; renderPostThumbs(); await new Promise(r=>setTimeout(r,0));
+  }
+  postImgProcessing=false; txt.textContent='图片处理完成'; setTimeout(()=>{progress.classList.remove('show');bar.style.width='0';},700); e.target.value='';
 }
 function handlePostVideo(e){
   const f=e.target.files[0];if(!f)return;
@@ -1913,9 +1953,12 @@ function handlePostVideo(e){
 }
 function renderPostThumbs(){
   document.getElementById('postThumbs').innerHTML=postImgs.map((src,i)=>
-    `<div class="thumb"><img src="${src}"><button class="rm" onclick="rmPostImg(${i})">✕</button></div>`
+    `<div class="thumb" draggable="true" data-img-index="${i}" ondragstart="dragPostImgStart(event,${i})" ondragover="event.preventDefault()" ondrop="dropPostImg(event,${i})"><img src="${src}" loading="lazy"><button class="rm" onclick="rmPostImg(${i})">✕</button></div>`
   ).join('');
 }
+let postDragIndex=-1;
+function dragPostImgStart(e,i){postDragIndex=i;e.currentTarget.classList.add('dragging');}
+function dropPostImg(e,i){e.preventDefault();if(postDragIndex<0||postDragIndex===i)return;const moved=postImgs.splice(postDragIndex,1)[0];postImgs.splice(i,0,moved);postDragIndex=-1;renderPostThumbs();}
 function renderPostVideoThumbs(){
   const el=document.getElementById('postVideoThumbs');
   if(postVideo){
@@ -1987,7 +2030,7 @@ function renderDaily(searchQuery){
       </div>
       ${p.text?`<div class="post-text">${esc(p.text)}</div>`:''}
       ${p.video?`<div class="post-images single"><video src="${p.video}" controls playsinline style="border-radius:10px;width:100%;max-height:300px;"></video></div>`:''}
-      ${imgs.length?`<div class="post-images ${gridCls}">${shown.map((s,i)=>{if(extra>0&&i===3)return `<div class="img-cell"><img src="${s}"><div class="post-more-overlay">+${extra}</div></div>`;return `<img src="${s}">`;}).join('')}</div>`:''}
+      ${imgs.length?`<div class="post-images ${gridCls}">${shown.map((s,i)=>{if(extra>0&&i===3)return `<div class="img-cell"><img loading="lazy" src="${s}"><div class="post-more-overlay">+${extra}</div></div>`;return `<img loading="lazy" src="${s}">`;}).join('')}</div>`:''}
       <div class="post-actions">
         <div class="post-action ${(p.likes||[]).length>0?'liked':''}" onclick="toggleLike('${p.id}')">${(p.likes||[]).length>0?'❤️':'🤍'} ${(p.likes||[]).length}</div>
         <div class="post-action" onclick="document.getElementById('cmInput_${p.id}').focus()">💬 ${(p.comments||[]).length}</div>
@@ -2415,7 +2458,7 @@ function exportMD(){
 }
 
 // ===== Zine Drag-to-Flip =====
-let zineDragStartX=0,zineDragging=false;
+let zineDragStartX=0,zineDragX=0,zineDragging=false,zineDragRaf=0;
 function initZineDrag(){
   const book=document.getElementById('zineBook');
   if(!book)return;
@@ -2429,27 +2472,28 @@ function initZineDrag(){
 }
 function onZineDragStart(e){
   zineDragging=true;
-  zineDragStartX=e.type.startsWith('touch')?e.touches[0].clientX:e.clientX;
+  zineDragStartX=e.type.startsWith('touch')?e.touches[0].clientX:e.clientX; zineDragX=zineDragStartX;
+  const book=document.getElementById('zineBook');if(book)book.classList.add('is-dragging');
 }
 function onZineDragMove(e){
   if(!zineDragging)return;
   const cx=e.type.startsWith('touch')?e.touches[0].clientX:e.clientX;
-  const dx=cx-zineDragStartX;
-  const cur=document.querySelector('.zine-spread:not(.hidden)');
-  if(cur){
-    const right=cur.querySelector('.zine-page-side.right');
-    const left=cur.querySelector('.zine-page-side.left');
-    if(dx<-30&&right){right.style.transform='rotateY('+Math.max(-45,-Math.abs(dx)*0.15)+'deg)';}
-    else if(dx>30&&left){left.style.transform='rotateY('+Math.min(45,Math.abs(dx)*0.15)+'deg)';}
-    else{if(right)right.style.transform='';if(left)left.style.transform='';}
-  }
+  zineDragX=cx; const dx=cx-zineDragStartX;
+  if(e.type.startsWith('touch')&&Math.abs(dx)>10&&e.cancelable)e.preventDefault();
+  if(zineDragRaf)cancelAnimationFrame(zineDragRaf);
+  zineDragRaf=requestAnimationFrame(()=>{
+    const cur=document.querySelector('.zine-spread:not(.hidden)');if(!cur)return;
+    const right=cur.querySelector('.zine-page-side.right'),left=cur.querySelector('.zine-page-side.left');
+    if(dx<-10&&right)right.style.transform='rotateY('+Math.max(-58,-Math.abs(dx)*0.22)+'deg)';
+    else if(dx>10&&left)left.style.transform='rotateY('+Math.min(58,Math.abs(dx)*0.22)+'deg)';
+  });
 }
 function onZineDragEnd(e){
   if(!zineDragging)return;
   zineDragging=false;
-  const cx=e.type.startsWith('touch')?(e.changedTouches?e.changedTouches[0].clientX:zineDragStartX):e.clientX;
-  const dx=cx-zineDragStartX;
-  document.querySelectorAll('.zine-page-side').forEach(el=>el.style.transform='');
+  const cx=e.type.startsWith('touch')?(e.changedTouches?e.changedTouches[0].clientX:zineDragX):e.clientX; const dx=cx-zineDragStartX;
+  const book=document.getElementById('zineBook');if(book)book.classList.remove('is-dragging');
+  document.querySelectorAll('.zine-page-side').forEach(el=>{el.style.transition='transform .35s cubic-bezier(.2,.8,.2,1)';el.style.transform='';setTimeout(()=>el.style.transition='',360);});
   if(dx<-50)flipZine(1);
   else if(dx>50)flipZine(-1);
 }
@@ -2464,6 +2508,10 @@ function uploadZineCover(e){
     save();renderZineBook();showToast('封面已更新');
   };
   r.readAsDataURL(f);
+}
+function uploadZineBackCover(e){
+  const f=e.target.files[0];if(!f||!zineState.monthKey)return;
+  const r=new FileReader();r.onload=ev=>{if(!data.backCovers)data.backCovers={};data.backCovers[zineState.monthKey]=ev.target.result;save();renderZineBook();showToast('封底已更新');};r.readAsDataURL(f);
 }
 
 // ===== Manual Zine Builder =====
@@ -2535,6 +2583,36 @@ function renderZineBookFromPages(pages,spreads){
   html+='<button class="zine-share-btn" onclick="shareZine()">分享月度 Zine 📖</button>';
   container.innerHTML=html;showZineSpread(0);setTimeout(initZineDrag,100);
 }
+
+// ===== 私密空间扩展：素材工坊 / 往年今日 / 作文素材 / 页面锁 =====
+function openStickerWorkshop(){
+  const old=document.getElementById('stickerWorkshop');if(old)old.remove();
+  const el=document.createElement('div');el.id='stickerWorkshop';el.className='modal-overlay active';
+  el.innerHTML='<div class="modal"><h2>🪄 图片素材工坊</h2><p style="font-size:.75rem;color:var(--text-mid)">图片只在本机处理，不会上传。选择图片后可智能去背景并加白边。</p><input id="stickerInput" type="file" accept="image/*" style="width:100%;margin:12px 0"><img id="stickerPreview" class="img-preview" style="max-height:220px;display:none"><label>滤镜</label><select id="stickerFilter" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px"><option value="none">原图</option><option value="brightness(1.08) saturate(.9)">清新</option><option value="grayscale(.25) contrast(1.05)">柔雾</option><option value="sepia(.18)">奶油</option></select><div class="modal-actions"><button class="btn-cancel" onclick="this.closest(\'.modal-overlay\').remove()">关闭</button><button class="btn-save" onclick="makeSticker()">抠图 + 白边</button></div></div>';
+  document.body.appendChild(el);document.getElementById('stickerInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const p=document.getElementById('stickerPreview');p.src=ev.target.result;p.style.display='block';};r.readAsDataURL(f);};
+}
+async function makeSticker(){
+  const src=document.getElementById('stickerPreview');if(!src||!src.src||src.src==='')return showToast('请先选择图片');
+  const out=await removeBackground(src);if(!data.stickers)data.stickers=[];data.stickers.unshift({id:'st_'+Date.now(),image:out,filter:document.getElementById('stickerFilter').value,date:new Date().toISOString()});save();showToast('贴纸已保存到本地素材库');
+  const img=new Image();img.src=out;img.onload=()=>{src.src=out;};
+}
+function showYearAgo(){
+  const now=new Date(),mmdd=String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const posts=(data.posts||[]).filter(p=>{const d=new Date(p.date);return String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')===mmdd&&d.getFullYear()!==now.getFullYear();});
+  const notes=[];data.books.forEach(b=>(b.notes||[]).forEach(n=>{const d=new Date(n.date);if(String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')===mmdd&&d.getFullYear()!==now.getFullYear())notes.push({book:b.title,n});}));
+  const html='<div class="modal-overlay active" id="memoryModal"><div class="modal"><h2>🌷 往年今日</h2>'+(posts.length?posts.map(p=>'<p style="line-height:1.7">'+esc(p.text||'📷 一条照片记录')+'</p>').join(''):'')+(notes.length?notes.map(x=>'<p style="line-height:1.7"><b>《'+esc(x.book)+'》</b><br>'+esc(x.n.quote||x.n.thoughts||'')+'</p>').join(''):'')+((!posts.length&&!notes.length)?'<p style="color:var(--text-mid);text-align:center;padding:24px 0">今天还没有往年记录，留下一笔给明年的自己吧。</p>':'')+'<div class="modal-actions"><button class="btn-save" onclick="closeModal(\'memoryModal\');document.getElementById(\'memoryModal\')?.remove()">知道了</button></div></div></div>';
+  const wrap=document.createElement('div');wrap.innerHTML=html;document.body.appendChild(wrap.firstElementChild);
+}
+function exportHighlights(){
+  let md='# Saoire 作文素材\n\n';data.books.forEach(b=>(b.notes||[]).forEach(n=>{if(n.quote)md+='## 《'+b.title+'》\n\n> '+n.quote+'\n\n'+(n.thoughts||'')+'\n\n';}));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'}));a.download='saoire-highlights-'+new Date().toISOString().slice(0,10)+'.md';a.click();showToast('作文素材已导出');
+}
+function configurePrivateLock(){
+  if(data.lockEnabled){if(prompt('输入当前页面锁密码')!==data.lockPassword)return showToast('密码不正确');data.lockEnabled=false;data.lockPassword='';save();return showToast('页面锁已关闭');}
+  const p=prompt('设置页面锁密码（仅保存在本机）');if(!p)return;const q=prompt('再输入一次确认');if(p!==q)return showToast('两次密码不一致');data.lockEnabled=true;data.lockPassword=p;save();showToast('页面锁已开启');
+}
+function checkPrivateLock(){if(data.lockEnabled){let tries=0;while(tries<3&&prompt('这是你的私密空间，请输入密码')!==data.lockPassword)tries++;if(tries>=3){document.body.innerHTML='<main style="padding:30vh 24px;text-align:center;font-family:system-ui;color:#777">🔒<br><br>页面已锁定，请刷新后重试。</main>';return false;}}return true;}
+checkPrivateLock();
 </script>
 </div>
 
