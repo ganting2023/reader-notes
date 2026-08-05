@@ -248,7 +248,23 @@ input,textarea{font-family:inherit;}
 .empty p{font-size:0.8rem;letter-spacing:1px;}
 
 @media(max-width:380px){.notes-grid{gap:10px;}.book-row .cover,.book-row .cover-ph{width:46px;height:62px;}}
-@media print{.dock,.modal-overlay,.note-detail-overlay{display:none!important;}}
+/* 长按菜单 */
+.press-menu{display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.3);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;}
+.press-menu.active{display:flex;}
+.press-menu-card{background:#fff;border-radius:16px;padding:8px;width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:mIn 0.25s ease;}
+.press-menu-item{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:10px;cursor:pointer;font-size:0.88rem;color:var(--text);transition:background 0.2s;}
+.press-menu-item:hover{background:var(--line);}
+.press-menu-item.danger{color:#c08080;}
+.press-menu-item.danger:hover{background:#fdf6f6;}
+.press-menu-divider{height:1px;background:var(--line);margin:2px 0;}
+
+/* 抠图处理中提示 */
+.cutout-loading{display:none;text-align:center;padding:16px;font-size:0.82rem;color:var(--text-mid);}
+.cutout-loading.show{display:block;}
+.cutout-loading .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+@media print{.dock,.modal-overlay,.note-detail-overlay,.press-menu{display:none!important;}}
 </style>
 </head>
 <body>
@@ -343,6 +359,17 @@ input,textarea{font-family:inherit;}
 <!-- 拍立得 -->
 <div class="note-detail-overlay" id="noteDetail"><div class="polaroid" id="polaroidCard"></div></div>
 
+<!-- 长按菜单 -->
+<div class="press-menu" id="pressMenu">
+  <div class="press-menu-card">
+    <div class="press-menu-item" onclick="editBook()">✏️ 修改信息</div>
+    <div class="press-menu-divider"></div>
+    <div class="press-menu-item danger" onclick="confirmDeleteBook()">🗑 删除</div>
+    <div class="press-menu-divider"></div>
+    <div class="press-menu-item" onclick="closePressMenu()" style="justify-content:center;color:var(--text-mid);">取消</div>
+  </div>
+</div>
+
 <script>
 const KEY='miracle_data_v3';
 let data=JSON.parse(localStorage.getItem(KEY)||'{"books":[]}');
@@ -375,7 +402,7 @@ function renderHome(){
   empty.style.display='none';
   list.innerHTML=data.books.map(b=>{
     const tags=(b.tags||[]).slice(0,3);
-    return `<div class="book-row" onclick="openBook('${b.id}')">
+    return `<div class="book-row" data-book-id="${b.id}" onclick="openBook('${b.id}')">
       ${b.coverImg?`<img class="cover" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
       <div class="info">
         <div class="b-title">《${esc(b.title)}》</div>
@@ -383,6 +410,60 @@ function renderHome(){
         ${tags.length?`<div class="b-tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>`:''}
       </div><div class="arrow">›</div></div>`;
   }).join('');
+  // 绑定长按
+  list.querySelectorAll('.book-row').forEach(row=>{
+    let pressTimer=null;
+    row.addEventListener('touchstart',function(e){
+      const bid=this.dataset.bookId;
+      pressTimer=setTimeout(()=>{e.preventDefault();showPressMenu(bid);},500);
+    });
+    row.addEventListener('touchend',()=>clearTimeout(pressTimer));
+    row.addEventListener('touchmove',()=>clearTimeout(pressTimer));
+    row.addEventListener('mousedown',function(e){
+      if(e.button!==0)return;
+      const bid=this.dataset.bookId;
+      pressTimer=setTimeout(()=>showPressMenu(bid),600);
+    });
+    row.addEventListener('mouseup',()=>clearTimeout(pressTimer));
+    row.addEventListener('mouseleave',()=>clearTimeout(pressTimer));
+    row.addEventListener('contextmenu',function(e){e.preventDefault();showPressMenu(this.dataset.bookId);});
+  });
+}
+
+// 长按菜单
+let pressBookId=null;
+function showPressMenu(bid){pressBookId=bid;document.getElementById('pressMenu').classList.add('active');}
+function closePressMenu(){document.getElementById('pressMenu').classList.remove('active');pressBookId=null;}
+document.getElementById('pressMenu').addEventListener('click',function(e){if(e.target===this)closePressMenu();});
+
+function confirmDeleteBook(){
+  if(!pressBookId)return;
+  const b=data.books.find(x=>x.id===pressBookId);
+  if(!b)return;
+  if(!confirm(`确认删除《${b.title}》及其所有摘录吗？`))return;
+  data.books=data.books.filter(x=>x.id!==pressBookId);
+  save();closePressMenu();renderHome();
+}
+
+function editBook(){
+  if(!pressBookId)return;
+  const b=data.books.find(x=>x.id===pressBookId);
+  if(!b)return;
+  closePressMenu();
+  // 复用添加书弹窗，改为编辑模式
+  document.getElementById('bookModal').classList.add('active');
+  document.getElementById('inputTitle').value=b.title||'';
+  document.getElementById('inputAuthor').value=b.author||'';
+  document.getElementById('inputTags').value=(b.tags||[]).join(', ');
+  selColor=b.color||'#7ea8a2';
+  coverImg=b.coverImg||null;
+  document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected'));
+  const co=document.querySelector(`.color-opt[data-c="${selColor}"]`);if(co)co.classList.add('selected');
+  if(coverImg){const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');}
+  else{document.getElementById('coverPrev').classList.remove('show');}
+  // 标记为编辑模式
+  document.getElementById('bookModal').dataset.editId=pressBookId;
+  document.querySelector('#bookModal h2').textContent='修改书';
 }
 
 function renderStats(){
@@ -492,13 +573,68 @@ document.getElementById('customColor').addEventListener('input',function(){
   this.parentElement.querySelector('.plus').style.color='#fff';
 });
 
-function handleCover(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=500;if(w>mx){h=h*mx/w;w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);coverImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');};img.src=ev.target.result;};r.readAsDataURL(f);}
+function removeBackground(imgData){
+  const c=document.createElement('canvas');
+  let w=imgData.width,h=imgData.height;const mx=500;
+  if(w>mx){h=Math.round(h*mx/w);w=mx;}
+  c.width=w;c.height=h;
+  const ctx=c.getContext('2d');
+  ctx.drawImage(imgData,0,0,w,h);
+  const id=ctx.getImageData(0,0,w,h);
+  const d=id.data;
+  // 采样四角颜色作为背景参考
+  const corners=[0,(w-1)*4,(h-1)*w*4,(h-1)*w*4+(w-1)*4];
+  let br=0,bg=0,bb=0,bn=0;
+  corners.forEach(ci=>{br+=d[ci];bg+=d[ci+1];bb+=d[ci+2];bn++;});
+  br/=bn;bg/=bn;bb/=bn;
+  const th=45;
+  for(let i=0;i<d.length;i+=4){
+    const diff=Math.sqrt((d[i]-br)**2+(d[i+1]-bg)**2+(d[i+2]-bb)**2);
+    if(diff<th){d[i+3]=0;}
+    else if(diff<th+30){d[i+3]=Math.round((diff-th)/30*255);}
+  }
+  ctx.putImageData(id,0,0);
+  return c.toDataURL('image/png');
+}
+
+function handleCover(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      // 显示“抠图中”
+      document.getElementById('coverPrev').classList.remove('show');
+      const loading=document.createElement('div');
+      loading.className='cutout-loading show';
+      loading.id='cutoutLoading';
+      loading.innerHTML='<span class="spinner"></span>正在抠图...';
+      document.querySelector('#bookModal .img-upload').after(loading);
+      // 异步处理
+      setTimeout(()=>{
+        coverImg=removeBackground(img);
+        const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
+        const cl=document.getElementById('cutoutLoading');if(cl)cl.remove();
+      },100);
+    };
+    img.src=ev.target.result;
+  };
+  r.readAsDataURL(f);
+}
 function saveBook(){
   const title=document.getElementById('inputTitle').value.trim();if(!title){alert('请输入书名');return;}
   const author=document.getElementById('inputAuthor').value.trim();
   const tagsStr=document.getElementById('inputTags').value.trim();
   const tags=tagsStr?tagsStr.split(/[,，、]/).map(t=>t.trim()).filter(Boolean):[];
-  data.books.unshift({id:'b_'+Date.now(),title,author,tags,color:selColor,coverImg,genre:guessGenre(tags,title),notes:[]});
+  const editId=document.getElementById('bookModal').dataset.editId;
+  if(editId){
+    // 编辑模式
+    const b=data.books.find(x=>x.id===editId);if(b){
+      b.title=title;b.author=author;b.tags=tags;b.color=selColor;b.coverImg=coverImg;b.genre=guessGenre(tags,title);
+    }
+  }else{
+    data.books.unshift({id:'b_'+Date.now(),title,author,tags,color:selColor,coverImg,genre:guessGenre(tags,title),notes:[]});
+  }
   save();closeModal('bookModal');renderHome();
 }
 function handleNoteImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;const mx=1200;if(w>mx){h=h*mx/w;w=mx;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);noteImg=c.toDataURL('image/jpeg',0.85);const p=document.getElementById('noteImgPrev');p.src=noteImg;p.classList.add('show');};img.src=ev.target.result;};r.readAsDataURL(f);}
@@ -512,6 +648,8 @@ function saveNote(){
 
 function openBookModal(){
   document.getElementById('bookModal').classList.add('active');
+  delete document.getElementById('bookModal').dataset.editId;
+  document.querySelector('#bookModal h2').textContent='添加书';
   document.getElementById('inputTitle').value='';
   document.getElementById('inputAuthor').value='';
   document.getElementById('inputTags').value='';
