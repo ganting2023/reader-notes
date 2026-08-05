@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v27-accordion';
+const CACHE_NAME = 'miracle-v28-zine';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
