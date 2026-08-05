@@ -1121,37 +1121,63 @@ document.getElementById('customColor').addEventListener('input',function(){
   this.parentElement.querySelector('.plus').style.color='#fff';
 });
 
-// ===== AI Background Removal (@imgly/background-removal) =====
+// ===== AI Background Removal (Simple edge detection) =====
+// Lightweight client-side background removal — no external deps, works on all browsers
 let _imglyModule=null;
 async function removeBackground(imgElement){
-  // Prepare input: convert img to blob
+  // Prepare input canvas (resize for processing)
   const ow=imgElement.naturalWidth||imgElement.width,oh=imgElement.naturalHeight||imgElement.height;
-  const mx=1024;
+  const mx=600;
   let w=ow,h=oh;
   if(w>mx||h>mx){const s=mx/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
   const inC=document.createElement('canvas');
   inC.width=w;inC.height=h;
-  inC.getContext('2d').drawImage(imgElement,0,0,w,h);
-  const blob=await new Promise(r=>inC.toBlob(r,'image/png'));
-  if(!_imglyModule){
-    // Dynamic import from CDN (ESM)
-    const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm');
-    _imglyModule=mod.removeBackground||mod.default;
-  }
-  // Run removal — returns Blob with transparent background
-  const outBlob=await _imglyModule(blob,{
-    progress:(key,current,total)=>{
-      console.log('cutout progress:',key,current,total);
-    }
+  const ctx=inC.getContext('2d');
+  ctx.drawImage(imgElement,0,0,w,h);
+  const imgData=ctx.getImageData(0,0,w,h);
+  const d=imgData.data;
+  // Sample corner colors as background estimate
+  const corners=[
+    [0,0],[w-1,0],[0,h-1],[w-1,h-1],
+    [Math.floor(w/4),0],[Math.floor(w*3/4),0],
+    [0,Math.floor(h/4)],[0,Math.floor(h*3/4)],
+    [w-1,Math.floor(h/4)],[w-1,Math.floor(h*3/4)]
+  ];
+  let bgR=0,bgG=0,bgB=0;
+  corners.forEach(([cx,cy])=>{
+    const i=(cy*w+cx)*4;
+    bgR+=d[i];bgG+=d[i+1];bgB+=d[i+2];
   });
-  // Convert blob to canvas
-  const outImg=new Image();
-  outImg.src=URL.createObjectURL(outBlob);
-  await new Promise(r=>{outImg.onload=r;});
+  bgR/=corners.length;bgG/=corners.length;bgB/=corners.length;
+  // Flood fill from edges — mark pixels similar to corner color as transparent
+  const threshold=35; // color similarity threshold
+  const visited=new Uint8Array(w*h);
+  const queue=[];
+  // Seed from all border pixels
+  for(let x=0;x<w;x++){
+    queue.push([x,0]);queue.push([x,h-1]);
+  }
+  for(let y=0;y<h;y++){
+    queue.push([0,y]);queue.push([w-1,y]);
+  }
+  while(queue.length>0){
+    const [px,py]=queue.shift();
+    if(px<0||px>=w||py<0||py>=h)continue;
+    const idx=py*w+px;
+    if(visited[idx])continue;
+    const i=idx*4;
+    const dr=d[i]-bgR,dg=d[i+1]-bgG,db=d[i+2]-bgB;
+    const dist=Math.sqrt(dr*dr+dg*dg+db*db);
+    if(dist>threshold)continue;
+    visited[idx]=1;
+    d[i+3]=0; // Make transparent
+    queue.push([px+1,py]);queue.push([px-1,py]);
+    queue.push([px,py+1]);queue.push([px,py-1]);
+  }
+  // Feather edges: for transparent pixels adjacent to opaque, blend alpha
   const outC=document.createElement('canvas');
-  outC.width=outImg.width;outC.height=outImg.height;
-  outC.getContext('2d').drawImage(outImg,0,0);
-  URL.revokeObjectURL(outImg.src);
+  outC.width=w;outC.height=h;
+  outC.getContext('2d').putImageData(imgData,0,0);
   // Apply sticker outline
   return applyStickerOutline(outC);
 }
