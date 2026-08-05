@@ -1082,43 +1082,10 @@ document.getElementById('customColor').addEventListener('input',function(){
   this.parentElement.querySelector('.plus').style.color='#fff';
 });
 
-// ===== AI Background Removal (Transformers.js + RMBG-1.4) =====
-let _bgRemover=null;
-let _bgRemoverLoading=false;
-async function getBgRemover(){
-  if(_bgRemover)return _bgRemover;
-  if(_bgRemoverLoading){
-    // Wait for loading to complete
-    while(_bgRemoverLoading){await new Promise(r=>setTimeout(r,200));}
-    return _bgRemover;
-  }
-  _bgRemoverLoading=true;
-  try{
-    if(!window.transformers){
-      await new Promise((resolve,reject)=>{
-        const s=document.createElement('script');
-        s.src='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.5.2';
-        s.onload=resolve;s.onerror=()=>reject(new Error('Failed to load Transformers.js'));
-        document.head.appendChild(s);
-      });
-    }
-    const {pipeline,env,RawImage}=window.transformers;
-    if(env){env.allowLocalModels=false;env.allowRemoteModels=true;}
-    // Use image-segmentation pipeline with RMBG-1.4 (BRIA AI)
-    _bgRemover=await pipeline('image-segmentation','briaai/RMBG-1.4',{quantized:true});
-  }catch(e){
-    console.error('Failed to load bg removal model:',e);
-    _bgRemover=null;
-  }finally{
-    _bgRemoverLoading=false;
-  }
-  return _bgRemover;
-}
-
+// ===== AI Background Removal (@imgly/background-removal) =====
+let _imglyModule=null;
 async function removeBackground(imgElement){
-  const remover=await getBgRemover();
-  if(!remover)throw new Error('Model load failed');
-  // Prepare input canvas (resize for model)
+  // Prepare input: convert img to blob
   const ow=imgElement.naturalWidth||imgElement.width,oh=imgElement.naturalHeight||imgElement.height;
   const mx=1024;
   let w=ow,h=oh;
@@ -1126,60 +1093,26 @@ async function removeBackground(imgElement){
   const inC=document.createElement('canvas');
   inC.width=w;inC.height=h;
   inC.getContext('2d').drawImage(imgElement,0,0,w,h);
-  // Run segmentation
-  const result=await remover(inC);
-  // RMBG-1.4 with image-segmentation returns [{mask: RawImage}]
-  let maskCanvas;
-  if(Array.isArray(result)&&result.length>0&&result[0].mask){
-    const mask=result[0].mask;
-    maskCanvas=document.createElement('canvas');
-    maskCanvas.width=mask.width;maskCanvas.height=mask.height;
-    const mctx=maskCanvas.getContext('2d');
-    const mImg=mctx.createImageData(mask.width,mask.height);
-    // mask.data channels = mask.channels (1=grayscale)
-    const ch=mask.channels||1;
-    for(let i=0;i<mask.width*mask.height;i++){
-      const v=mask.data[i*ch];
-      mImg.data[i*4]=v;mImg.data[i*4+1]=v;mImg.data[i*4+2]=v;mImg.data[i*4+3]=255;
-    }
-    mctx.putImageData(mImg,0,0);
-  }else if(result&&result.mask){
-    // Single result with mask
-    const mask=result.mask;
-    maskCanvas=document.createElement('canvas');
-    maskCanvas.width=mask.width;maskCanvas.height=mask.height;
-    const mctx=maskCanvas.getContext('2d');
-    const mImg=mctx.createImageData(mask.width,mask.height);
-    const ch=mask.channels||1;
-    for(let i=0;i<mask.width*mask.height;i++){
-      const v=mask.data[i*ch];
-      mImg.data[i*4]=v;mImg.data[i*4+1]=v;mImg.data[i*4+2]=v;mImg.data[i*4+3]=255;
-    }
-    mctx.putImageData(mImg,0,0);
-  }else{
-    throw new Error('Unexpected model output');
+  const blob=await new Promise(r=>inC.toBlob(r,'image/png'));
+  if(!_imglyModule){
+    // Dynamic import from CDN (ESM)
+    const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm');
+    _imglyModule=mod.removeBackground||mod.default;
   }
-  // Composite: original image with mask as alpha
+  // Run removal — returns Blob with transparent background
+  const outBlob=await _imglyModule(blob,{
+    progress:(key,current,total)=>{
+      console.log('cutout progress:',key,current,total);
+    }
+  });
+  // Convert blob to canvas
+  const outImg=new Image();
+  outImg.src=URL.createObjectURL(outBlob);
+  await new Promise(r=>{outImg.onload=r;});
   const outC=document.createElement('canvas');
-  outC.width=w;outC.height=h;
-  const outCtx=outC.getContext('2d');
-  outCtx.drawImage(inC,0,0);
-  const origData=outCtx.getImageData(0,0,w,h);
-  // Resize mask to match if needed
-  const maskData=maskCanvas.width===w&&maskCanvas.height===h
-    ?maskCanvas.getContext('2d').getImageData(0,0,w,h)
-    :(function(){
-        const tmpC=document.createElement('canvas');tmpC.width=w;tmpC.height=h;
-        const tmpCtx=tmpC.getContext('2d');
-        tmpCtx.drawImage(maskCanvas,0,0,w,h);
-        return tmpCtx.getImageData(0,0,w,h);
-      })();
-  // Apply mask as alpha
-  for(let i=0;i<w*h;i++){
-    const m=maskData.data[i*4]/255; // 0..1
-    origData.data[i*4+3]=Math.round(origData.data[i*4+3]*m);
-  }
-  outCtx.putImageData(origData,0,0);
+  outC.width=outImg.width;outC.height=outImg.height;
+  outC.getContext('2d').drawImage(outImg,0,0);
+  URL.revokeObjectURL(outImg.src);
   // Apply sticker outline
   return applyStickerOutline(outC);
 }
