@@ -1162,115 +1162,60 @@ document.getElementById('customColor').addEventListener('input',function(){
 });
 
 // ===== Flood-fill Background Removal =====
-function removeBackground(imgData){
-  const tmpC=document.createElement('canvas');
-  let ow=imgData.naturalWidth||imgData.width,oh=imgData.naturalHeight||imgData.height;
-  const mx=600;
-  let w=ow,h=oh;
-  if(w>mx){h=Math.round(h*mx/w);w=mx;}
-  tmpC.width=w;tmpC.height=h;
-  const tmpCtx=tmpC.getContext('2d');
-  tmpCtx.drawImage(imgData,0,0,w,h);
-  const id=tmpCtx.getImageData(0,0,w,h);
+// ===== AI Background Removal (Transformers.js + RMBG-1.4) =====
+let _bgRemover=null;
+let _bgRemoverLoading=false;
+async function getBgRemover(){
+  if(_bgRemover)return _bgRemover;
+  if(_bgRemoverLoading)return null;
+  _bgRemoverLoading=true;
+  // Dynamically import Transformers.js
+  if(!window.transformers){
+    await new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0';
+      s.onload=resolve;s.onerror=()=>reject(new Error('Failed to load Transformers.js'));
+      document.head.appendChild(s);
+    });
+  }
+  const {pipeline}=window.transformers;
+  _bgRemover=await pipeline('background-removal','Xenova/modnet',{quantized:true});
+  _bgRemoverLoading=false;
+  return _bgRemover;
+}
+
+async function removeBackground(imgElement){
+  const remover=await getBgRemover();
+  if(!remover)throw new Error('Model still loading');
+  // Run AI inference
+  const out=await remover(imgElement);
+  // out is an HTMLCanvasElement or Blob URL with transparent background
+  let outCanvas;
+  if(out instanceof HTMLCanvasElement){
+    outCanvas=out;
+  }else if(out.canvas){
+    outCanvas=out.canvas;
+  }else{
+    // If it's a data URL or blob, draw to canvas
+    outCanvas=document.createElement('canvas');
+    const ctx=outCanvas.getContext('2d');
+    const tmpImg=new Image();
+    tmpImg.src=typeof out==='string'?out:out.url||URL.createObjectURL(out);
+    await new Promise(r=>{tmpImg.onload=r;});
+    outCanvas.width=tmpImg.width;outCanvas.height=tmpImg.height;
+    ctx.drawImage(tmpImg,0,0);
+  }
+  // Apply Apple sticker white outline
+  return applyStickerOutline(outCanvas);
+}
+
+function applyStickerOutline(srcCanvas){
+  const w=srcCanvas.width,h=srcCanvas.height;
+  const srcCtx=srcCanvas.getContext('2d');
+  const id=srcCtx.getImageData(0,0,w,h);
   const d=id.data;
 
-  // Step 1: Sample corner colors as background reference
-  const samplePoints=[
-    [0,0],[w-1,0],[0,h-1],[w-1,h-1],
-    [1,1],[w-2,1],[1,h-2],[w-2,h-2],
-    [Math.floor(w/2),0],[Math.floor(w/2),h-1],
-    [0,Math.floor(h/2)],[w-1,Math.floor(h/2)]
-  ];
-  let br=0,bg=0,bb=0;
-  samplePoints.forEach(([x,y])=>{
-    const i=(y*w+x)*4;
-    br+=d[i];bg+=d[i+1];bb+=d[i+2];
-  });
-  const sc=samplePoints.length;
-  br/=sc;bg/=sc;bb/=sc;
-
-  // Step 2: Flood-fill from all 4 edges
-  const tolerance=50;
-  const visited=new Uint8Array(w*h);
-  const queue=[];
-  const isBgColor=(idx)=>{
-    const dr=d[idx]-br,dg=d[idx+1]-bg,db=d[idx+2]-bb;
-    return Math.sqrt(dr*dr+dg*dg+db*db)<tolerance;
-  };
-
-  // Seed from all border pixels
-  // Top and bottom rows
-  for(let x=0;x<w;x++){
-    const ti=x,bi=(h-1)*w+x;
-    if(isBgColor(ti*4)&&!visited[ti]){visited[ti]=1;queue.push(ti);}
-    if(isBgColor(bi*4)&&!visited[bi]){visited[bi]=1;queue.push(bi);}
-  }
-  // Left and right columns
-  for(let y=0;y<h;y++){
-    const li=y*w,ri=y*w+w-1;
-    if(isBgColor(li*4)&&!visited[li]){visited[li]=1;queue.push(li);}
-    if(isBgColor(ri*4)&&!visited[ri]){visited[ri]=1;queue.push(ri);}
-  }
-
-  // BFS flood fill
-  while(queue.length>0){
-    const idx=queue.shift();
-    const x=idx%w,y=Math.floor(idx/w);
-    // Check neighbors
-    const neighbors=[];
-    if(x>0)neighbors.push(idx-1);
-    if(x<w-1)neighbors.push(idx+1);
-    if(y>0)neighbors.push(idx-w);
-    if(y<h-1)neighbors.push(idx+w);
-    for(const ni of neighbors){
-      if(!visited[ni]&&isBgColor(ni*4)){
-        visited[ni]=1;
-        queue.push(ni);
-      }
-    }
-  }
-
-  // Step 3: Mark non-visited pixels as foreground
-  // Background = visited, Foreground = not visited
-  // Step 4: Soft alpha feathering at boundaries (3px)
-  for(let i=0;i<w*h;i++){
-    if(visited[i]){
-      d[i*4+3]=0; // Full transparent for background
-    }
-  }
-
-  // Feather: find boundary foreground pixels and give partial alpha
-  const featherRadius=3;
-  for(let y=0;y<h;y++){
-    for(let x=0;x<w;x++){
-      const idx=y*w+x;
-      if(!visited[idx]){
-        // Check if near a background pixel
-        let minDist=featherRadius+1;
-        for(let dy=-featherRadius;dy<=featherRadius;dy++){
-          for(let dx=-featherRadius;dx<=featherRadius;dx++){
-            const nx=x+dx,ny=y+dy;
-            if(nx>=0&&nx<w&&ny>=0&&ny<h){
-              if(visited[ny*w+nx]){
-                const dist=Math.sqrt(dx*dx+dy*dy);
-                if(dist<minDist)minDist=dist;
-              }
-            }
-          }
-        }
-        if(minDist<=featherRadius){
-          // Near boundary — apply partial alpha
-          const alpha=Math.round((minDist/featherRadius)*255);
-          if(alpha<d[idx*4+3])d[idx*4+3]=alpha;
-        }
-      }
-    }
-  }
-
-  tmpCtx.putImageData(id,0,0);
-
-  // Step 5: Apple-style smooth sticker outline (multi-layer composite)
-  // Build alpha mask canvas
+  // Build alpha mask
   const maskC=document.createElement('canvas');
   maskC.width=w;maskC.height=h;
   const mctx=maskC.getContext('2d');
@@ -1285,14 +1230,14 @@ function removeBackground(imgData){
   outC.width=w;outC.height=h;
   const outCtx=outC.getContext('2d');
 
-  // Layer 1: wide soft halo (blur 5px) — outer glow for smooth transition
+  // Layer 1: wide soft halo (blur 5px)
   outCtx.save();outCtx.filter='blur(5px)';outCtx.drawImage(maskC,0,0);outCtx.restore();
-  // Layer 2: medium white edge (blur 2px) — tight contour-following outline
+  // Layer 2: medium white edge (blur 2px)
   outCtx.save();outCtx.filter='blur(2px)';outCtx.drawImage(maskC,0,0);outCtx.restore();
-  // Layer 3: crisp 1px white — sharp inner boundary
+  // Layer 3: crisp white
   outCtx.save();outCtx.filter='none';outCtx.drawImage(maskC,0,0);outCtx.restore();
-  // Layer 4: original foreground on top — preserves full image quality
-  outCtx.drawImage(tmpC,0,0);
+  // Layer 4: original foreground
+  outCtx.drawImage(srcCanvas,0,0);
 
   return outC.toDataURL('image/png');
 }
@@ -1302,18 +1247,29 @@ function handleCover(e){
   const r=new FileReader();
   r.onload=ev=>{
     const img=new Image();
-    img.onload=()=>{
+    img.onload=async()=>{
       document.getElementById('coverPrev').classList.remove('show');
       const loading=document.createElement('div');
       loading.className='cutout-loading show';
       loading.id='cutoutLoading';
-      loading.innerHTML='<span class="spinner"></span>正在抠图...';
+      loading.innerHTML='<span class="spinner"></span>🤖 AI 抠图中...';
       document.querySelector('#bookModal .img-upload').after(loading);
-      setTimeout(()=>{
-        coverImg=removeBackground(img);
+      try{
+        coverImg=await removeBackground(img);
         const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
+      }catch(err){
+        console.error('AI抠图失败:',err);
+        // Fallback: use original image without background removal
+        const mx=600;let w=img.width,h=img.height;
+        if(w>mx){h=Math.round(h*mx/w);w=mx;}
+        const c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        coverImg=c.toDataURL('image/png');
+        const p=document.getElementById('coverPrev');p.src=coverImg;p.classList.add('show');
+        showToast('AI模型加载失败，使用原图');
+      }finally{
         const cl=document.getElementById('cutoutLoading');if(cl)cl.remove();
-      },100);
+      }
     };
     img.src=ev.target.result;
   };
