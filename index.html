@@ -79,8 +79,13 @@ input,textarea{font-family:inherit;}
 .book-row:active{transform:scale(0.98);}
 .book-row:hover{box-shadow:var(--shadow-md);}
 .book-row .cover{
-  width:52px;height:70px;border-radius:4px 8px 8px 4px;object-fit:cover;flex-shrink:0;
+  width:52px;height:70px;border-radius:4px 8px 8px 4px;object-fit:contain;flex-shrink:0;
   box-shadow:0 2px 8px rgba(0,0,0,0.1),inset 3px 0 0 rgba(0,0,0,0.06);
+  background:linear-gradient(135deg,#f9f9f9,#f0f0f0);padding:2px;
+}
+.book-row .cover.cutout{
+  object-fit:contain;border-radius:8px;padding:3px;
+  background:linear-gradient(135deg,#f5f0eb,#ede8e3);
 }
 .book-row .cover-ph{
   width:52px;height:70px;border-radius:4px 8px 8px 4px;flex-shrink:0;
@@ -793,7 +798,7 @@ function searchHome(query){
   list.innerHTML=filtered.map(b=>{
     const tags=(b.tags||[]).slice(0,3);
     return `<div class="book-row" data-book-id="${b.id}" onclick="openBook('${b.id}')">
-      ${b.coverImg?`<img class="cover" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
+      ${b.coverImg?`<img class="cover cutout" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
       <div class="info">
         <div class="b-title">《${esc(b.title)}》</div>
         <div class="b-meta">${(b.notes||[]).length} 条笔记${b.author?' · '+esc(b.author):''}</div>
@@ -826,7 +831,7 @@ function renderHome(){
   list.innerHTML=data.books.map(b=>{
     const tags=(b.tags||[]).slice(0,3);
     return `<div class="book-row" data-book-id="${b.id}" onclick="openBook('${b.id}')">
-      ${b.coverImg?`<img class="cover" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
+      ${b.coverImg?`<img class="cover cutout" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
       <div class="info">
         <div class="b-title">《${esc(b.title)}》</div>
         <div class="b-meta">${(b.notes||[]).length} 条笔记${b.author?' · '+esc(b.author):''}</div>
