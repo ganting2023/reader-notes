@@ -312,17 +312,84 @@ input,textarea{font-family:inherit;}
 .daily-subtab{padding:6px 20px;border-radius:20px;font-size:0.82rem;font-weight:500;transition:all 0.25s;background:transparent;color:var(--text-mid);border:none;cursor:pointer;}
 .daily-subtab.active{background:var(--accent);color:#fff;}
 
-/* ===== 相簿 ===== */
-.album-section{margin-bottom:32px;}
-.album-month-header{font-family:var(--serif);font-size:1.1rem;color:var(--text);margin-bottom:12px;padding:0 4px;display:flex;align-items:center;gap:8px;}
-.album-month-header .count{font-size:0.7rem;color:var(--text-mid);font-weight:normal;}
-.album-grid{columns:2;column-gap:8px;padding:0 4px;}
-.album-photo{break-inside:avoid;margin-bottom:8px;border-radius:8px;overflow:hidden;border:6px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.08);transition:transform 0.2s;cursor:pointer;background:#fff;}
-.album-photo:nth-child(3n){transform:rotate(-2deg);}
-.album-photo:nth-child(3n+1){transform:rotate(1deg);}
-.album-photo:nth-child(3n+2){transform:rotate(-1deg);}
-.album-photo:active{transform:scale(0.95);}
-.album-photo img{width:100%;display:block;}
+/* ===== Accordion Album ===== */
+.album-book{perspective:1500px;padding:0 16px;}
+.album-page{
+  margin-bottom:16px;
+  background:var(--card);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 2px 12px rgba(0,0,0,0.06);
+  transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.album-page-header{
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  user-select:none;
+  background:linear-gradient(135deg,rgba(126,168,162,0.08),rgba(193,166,175,0.08));
+  transition:background 0.3s;
+}
+.album-page-header:active{background:rgba(126,168,162,0.15);}
+.album-page-header .month-label{
+  font-family:var(--serif);
+  font-size:1rem;
+  color:var(--text);
+  letter-spacing:1px;
+}
+.album-page-header .month-info{
+  font-size:0.7rem;
+  color:var(--text-mid);
+}
+.album-page-header .toggle{
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  color:var(--text-mid);
+  font-size:0.8rem;
+}
+.album-page.open .toggle{transform:rotate(180deg);}
+.album-page-content{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+.album-page.open .album-page-content{max-height:2000px;}
+
+/* Flipbook-style photo layout inside each page */
+.album-photos{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:12px 14px 16px;
+}
+.album-photo-item{
+  width:calc(33.333% - 4px);
+  aspect-ratio:1;
+  border-radius:8px;
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+  border:3px solid #fff;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  transition:transform 0.25s;
+}
+.album-photo-item:active{transform:scale(0.92);}
+.album-photo-item img{width:100%;height:100%;object-fit:cover;display:block;}
+/* Polaroid rotation effect */
+.album-photo-item:nth-child(odd){transform:rotate(-1.5deg);}
+.album-photo-item:nth-child(3n){transform:rotate(1deg);}
+.album-photo-item:nth-child(4n){transform:rotate(-1deg);}
+
+/* Empty state */
+.album-empty{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-mid);
+}
+.album-empty .icon{font-size:2.5rem;margin-bottom:12px;}
 
 /* ===== 照片查看器 ===== */
 .photo-viewer{display:none;position:fixed;inset:0;z-index:850;background:rgba(0,0,0,0.9);align-items:center;justify-content:center;padding:24px;}
@@ -1340,7 +1407,7 @@ document.querySelector('#pageHome .app-header h1').addEventListener('click',()=>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.getRegistrations().then(regs=>{
     regs.forEach(r=>r.unregister());
-    navigator.serviceWorker.register('sw.js?v5').catch(()=>{});
+    navigator.serviceWorker.register('sw.js?v6').catch(()=>{});
   });
 }
 // ===== 日常子标签 =====
@@ -1355,31 +1422,38 @@ function renderAlbum(){
   const wrap=document.getElementById('albumWrap');
   const posts=(data.posts||[]).filter(p=>p.images&&p.images.length>0);
   if(posts.length===0){
-    wrap.innerHTML='<div class="empty"><div class="icon">📷</div><p>还没有照片，发条动态试试吧</p></div>';
+    wrap.innerHTML='<div class="album-empty"><div class="icon">📷</div><p>还没有照片，发条动态试试吧</p></div>';
     return;
   }
+  // Group by month
   const byMonth={};
   posts.forEach(p=>{
     const d=new Date(p.date);
     const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     if(!byMonth[key])byMonth[key]=[];
-    p.images.forEach(img=>byMonth[key].push({img,date:p.date,text:p.text}));
+    p.images.forEach(img=>byMonth[key].push(img));
   });
   const months=Object.keys(byMonth).sort().reverse();
   const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
-  let html='';
-  months.forEach(m=>{
+  let html='<div class="album-book">';
+  // Auto-open the latest month
+  months.forEach((m,idx)=>{
     const [y,mo]=m.split('-');
     const photos=byMonth[m];
     const monthLabel=parseInt(y)+'年'+monthNames[parseInt(mo)-1];
-    html+='<div class="album-section">';
-    html+='<div class="album-month-header">'+monthLabel+' <span class="count">'+photos.length+'张</span></div>';
-    html+='<div class="album-grid">';
-    photos.forEach((ph,i)=>{
-      html+='<div class="album-photo" onclick="viewPhoto(\''+ph.img+'\')"><img src="'+ph.img+'" loading="lazy"></div>';
+    const isOpen=idx===0?' open':'';
+    html+='<div class="album-page'+isOpen+'">';
+    html+='<div class="album-page-header" onclick="this.parentElement.classList.toggle(\'open\')">';
+    html+='<div><span class="month-label">'+monthLabel+'</span> <span class="month-info">'+photos.length+'张</span></div>';
+    html+='<div class="toggle">▼</div>';
+    html+='</div>';
+    html+='<div class="album-page-content"><div class="album-photos">';
+    photos.forEach(src=>{
+      html+='<div class="album-photo-item" onclick="viewPhoto(\''+src+'\')"><img src="'+src+'" loading="lazy"></div>';
     });
-    html+='</div></div>';
+    html+='</div></div></div>';
   });
+  html+='</div>';
   wrap.innerHTML=html;
 }
 function viewPhoto(src){
@@ -1406,12 +1480,13 @@ function openPostModal(mode){
 }
 function handlePostImgs(e){
   const files=Array.from(e.target.files||[]);
-  for(const f of files){
-    if(postImgs.length>=9)break;
+  files.forEach((f,idx)=>{
+    if(postImgs.length>=9)return;
     const r=new FileReader();
     r.onload=ev=>{
       const img=new Image();
       img.onload=()=>{
+        if(postImgs.length>=9)return;
         const c=document.createElement('canvas');
         let w=img.width,h=img.height;const mx=1000;
         if(w>mx){h=Math.round(h*mx/w);w=mx;}
@@ -1419,10 +1494,12 @@ function handlePostImgs(e){
         postImgs.push(c.toDataURL('image/jpeg',0.8));
         renderPostThumbs();
       };
+      img.onerror=()=>{ console.error('Failed to load image:',f.name); };
       img.src=ev.target.result;
     };
+    r.onerror=()=>{ console.error('Failed to read file:',f.name); };
     r.readAsDataURL(f);
-  }
+  });
 }
 function handlePostVideo(e){
   const f=e.target.files[0];if(!f)return;
