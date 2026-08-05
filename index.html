@@ -267,6 +267,40 @@ input,textarea{font-family:inherit;}
 
 @media print{.dock,.modal-overlay,.note-detail-overlay,.press-menu,#imgEditor{display:none!important;}}
 
+/* ===== 日常页 ===== */
+.daily-feed{max-width:600px;margin:0 auto;padding:0 16px;}
+.post-card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:16px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,0.02);}
+.post-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.post-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.82rem;font-weight:500;flex-shrink:0;}
+.post-user{font-size:0.85rem;font-weight:500;color:var(--text);}
+.post-time{font-size:0.68rem;color:var(--text-light);margin-top:1px;}
+.post-text{font-size:0.88rem;line-height:1.7;color:var(--text);margin-bottom:10px;white-space:pre-wrap;word-break:break-word;}
+.post-images{display:grid;gap:4px;margin-bottom:10px;}
+.post-images.single img{border-radius:10px;width:100%;max-height:300px;object-fit:cover;}
+.post-images.two{grid-template-columns:1fr 1fr;}
+.post-images.three{grid-template-columns:repeat(3,1fr);}
+.post-images.four{grid-template-columns:1fr 1fr;}
+.post-images img{border-radius:8px;width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.post-actions{display:flex;gap:20px;padding-top:8px;border-top:1px solid var(--line);}
+.post-action{display:flex;align-items:center;gap:5px;font-size:0.76rem;color:var(--text-mid);cursor:pointer;transition:color 0.2s;}
+.post-action:active{transform:scale(0.95);}
+.post-action.liked{color:var(--accent);}
+.post-comment-list{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);}
+.post-comment{font-size:0.78rem;line-height:1.5;margin-bottom:4px;color:var(--text);}
+.post-comment .cm-del{color:var(--text-light);margin-left:6px;cursor:pointer;font-size:0.7rem;}
+.post-comment-input{display:flex;gap:8px;margin-top:8px;}
+.post-comment-input input{flex:1;border:1px solid var(--line);border-radius:18px;padding:6px 14px;font-size:0.76rem;color:var(--text);background:#fafafa;}
+.post-comment-input input:focus{outline:none;border-color:var(--accent);}
+.post-comment-input button{background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:18px;font-size:0.74rem;cursor:pointer;}
+.post-delete{float:right;color:var(--text-light);font-size:0.7rem;cursor:pointer;padding:2px 6px;}
+.post-delete:hover{color:#c08080;}
+
+/* 发帖弹窗额外样式 */
+.post-img-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.post-img-thumbs .thumb{position:relative;width:70px;height:70px;border-radius:8px;overflow:hidden;}
+.post-img-thumbs .thumb img{width:100%;height:100%;object-fit:cover;}
+.post-img-thumbs .thumb .rm{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.5);color:#fff;border:none;font-size:0.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
 /* Edit image button */
 .btn-edit-img{display:block;width:100%;margin-top:8px;padding:8px;text-align:center;font-size:0.76rem;color:var(--accent);background:rgba(126,168,162,0.08);border:1px solid rgba(126,168,162,0.2);border-radius:8px;letter-spacing:1px;}
 
@@ -314,6 +348,19 @@ input,textarea{font-family:inherit;}
   <div class="stats-wrap" id="statsWrap"></div>
 </div>
 
+<!-- 日常 -->
+<div class="page" id="pageDaily">
+  <div class="app-header">
+    <h1>日常</h1>
+    <div class="sub">D A I L Y &nbsp; L I F E</div>
+  </div>
+  <div class="add-btn-wrap">
+    <button class="btn-add" onclick="openPostModal()">+ 发布动态</button>
+  </div>
+  <div class="daily-feed" id="dailyFeed"></div>
+  <div id="emptyDaily" class="empty" style="display:none;"><div class="icon">🌸</div><p>还没有动态，记录一下今天吧</p></div>
+</div>
+
 <!-- 书详情 -->
 <div class="page" id="pageBook">
   <div class="book-detail-header">
@@ -349,6 +396,7 @@ input,textarea{font-family:inherit;}
 <!-- 程序坞 -->
 <div class="dock" id="dock">
   <div class="dock-item active" onclick="switchTab('home')" id="dockHome"><div class="dock-icon">🏡</div><div class="dock-label">主页</div></div>
+  <div class="dock-item" onclick="switchTab('daily')" id="dockDaily"><div class="dock-icon">🌸</div><div class="dock-label">日常</div></div>
   <div class="dock-item" onclick="switchTab('stats')" id="dockStats"><div class="dock-icon">📊</div><div class="dock-label">统计</div></div>
 </div>
 
@@ -412,6 +460,23 @@ input,textarea{font-family:inherit;}
   </div>
 </div>
 
+<!-- 发帖弹窗 -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal">
+    <h2>发布动态</h2>
+    <label>说点什么</label>
+    <textarea class="quote-input" id="postTextInput" placeholder="记录此刻的心情..." style="min-height:80px;"></textarea>
+    <label>图片（最多9张）</label>
+    <div class="img-upload" onclick="document.getElementById('postImgInput').click()"><div class="icon">📁</div><p>点击选择图片</p></div>
+    <input type="file" id="postImgInput" accept="image/*" multiple style="display:none" onchange="handlePostImgs(event)">
+    <div class="post-img-thumbs" id="postThumbs"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('postModal')">取消</button>
+      <button class="btn-save" onclick="savePost()">发布</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const KEY='miracle_data_v3';
 let data=JSON.parse(localStorage.getItem(KEY)||'{"books":[]}');
@@ -435,6 +500,7 @@ function switchTab(tab){
   document.getElementById('pageBook').classList.remove('active');
   if(tab==='home'){document.getElementById('pageHome').classList.add('active');document.getElementById('dockHome').classList.add('active');renderHome();}
   else if(tab==='stats'){document.getElementById('pageStats').classList.add('active');document.getElementById('dockStats').classList.add('active');renderStats();}
+  else if(tab==='daily'){document.getElementById('pageDaily').classList.add('active');document.getElementById('dockDaily').classList.add('active');renderDaily();}
 }
 function goHome(){switchTab('home');}
 
@@ -1020,6 +1086,109 @@ function saveImgEditor(){
   const p=document.getElementById('noteImgPrev');
   p.src=noteImg;p.classList.add('show');
   cancelImgEditor();
+}
+
+// ===== 日常功能 =====
+let postImgs=[];
+function openPostModal(){
+  document.getElementById('postModal').classList.add('active');
+  document.getElementById('postTextInput').value='';
+  document.getElementById('postImgInput').value='';
+  document.getElementById('postThumbs').innerHTML='';
+  postImgs=[];
+}
+function handlePostImgs(e){
+  const files=Array.from(e.target.files||[]);
+  for(const f of files){
+    if(postImgs.length>=9)break;
+    const r=new FileReader();
+    r.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas');
+        let w=img.width,h=img.height;const mx=1000;
+        if(w>mx){h=Math.round(h*mx/w);w=mx;}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        postImgs.push(c.toDataURL('image/jpeg',0.8));
+        renderPostThumbs();
+      };
+      img.src=ev.target.result;
+    };
+    r.readAsDataURL(f);
+  }
+}
+function renderPostThumbs(){
+  document.getElementById('postThumbs').innerHTML=postImgs.map((src,i)=>
+    `<div class="thumb"><img src="${src}"><button class="rm" onclick="rmPostImg(${i})">✕</button></div>`
+  ).join('');
+}
+function rmPostImg(i){postImgs.splice(i,1);renderPostThumbs();}
+function savePost(){
+  const text=document.getElementById('postTextInput').value.trim();
+  if(!text&&postImgs.length===0){alert('写点什么或选张图吧');return;}
+  if(!data.posts)data.posts=[];
+  data.posts.unshift({id:'p_'+Date.now(),text,images:[...postImgs],likes:[],comments:[],date:new Date().toISOString()});
+  save();closeModal('postModal');renderDaily();
+}
+function fmtRelative(d){
+  const now=Date.now();const diff=now-new Date(d).getTime();
+  const m=Math.floor(diff/60000),h=Math.floor(diff/3600000),day=Math.floor(diff/86400000);
+  if(m<1)return '刚刚';
+  if(m<60)return m+'分钟前';
+  if(h<24)return h+'小时前';
+  if(day<7)return day+'天前';
+  return fmtDate(d);
+}
+function renderDaily(){
+  const feed=document.getElementById('dailyFeed'),empty=document.getElementById('emptyDaily');
+  const posts=data.posts||[];
+  if(posts.length===0){empty.style.display='block';feed.innerHTML='';return;}
+  empty.style.display='none';
+  feed.innerHTML=posts.map(p=>{
+    const imgs=p.images||[];
+    let gridCls='single';
+    if(imgs.length===2)gridCls='two';else if(imgs.length===3)gridCls='three';else if(imgs.length>=4)gridCls='four';
+    const shown=imgs.length>4?imgs.slice(0,4):imgs;
+    return `<div class="post-card">
+      <span class="post-delete" onclick="delPost('${p.id}')">删除</span>
+      <div class="post-header">
+        <div class="post-avatar">K</div>
+        <div><div class="post-user">Kora</div><div class="post-time">${fmtRelative(p.date)}</div></div>
+      </div>
+      ${p.text?`<div class="post-text">${esc(p.text)}</div>`:''}
+      ${imgs.length?`<div class="post-images ${gridCls}">${shown.map(s=>`<img src="${s}">`).join('')}</div>`:''}
+      <div class="post-actions">
+        <div class="post-action ${(p.likes||[]).length>0?'liked':''}" onclick="toggleLike('${p.id}')">${(p.likes||[]).length>0?'❤️':'🤍'} ${(p.likes||[]).length}</div>
+        <div class="post-action" onclick="document.getElementById('cmInput_${p.id}').focus()">💬 ${(p.comments||[]).length}</div>
+      </div>
+      ${(p.comments||[]).length?`<div class="post-comment-list">${p.comments.map((c,i)=>`<div class="post-comment"><b>Kora</b> ${esc(c)}<span class="cm-del" onclick="delComment('${p.id}',${i})">删除</span></div>`).join('')}</div>`:''}
+      <div class="post-comment-input">
+        <input type="text" id="cmInput_${p.id}" placeholder="写评论..." onkeypress="if(event.key==='Enter')addComment('${p.id}',this.value,this)">
+        <button onclick="addComment('${p.id}',document.getElementById('cmInput_${p.id}').value,document.getElementById('cmInput_${p.id}'))">发送</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleLike(pid){
+  const p=(data.posts||[]).find(x=>x.id===pid);if(!p)return;
+  p.likes=p.likes||[];
+  if(p.likes.length>0)p.likes=[];else p.likes=[1];
+  save();renderDaily();
+}
+function addComment(pid,text,input){
+  text=text.trim();if(!text)return;
+  const p=(data.posts||[]).find(x=>x.id===pid);if(!p)return;
+  p.comments=p.comments||[];p.comments.push(text);
+  save();if(input)input.value='';renderDaily();
+}
+function delComment(pid,idx){
+  const p=(data.posts||[]).find(x=>x.id===pid);if(!p)return;
+  p.comments.splice(idx,1);save();renderDaily();
+}
+function delPost(pid){
+  if(!confirm('删除这条动态？'))return;
+  data.posts=(data.posts||[]).filter(x=>x.id!==pid);
+  save();renderDaily();
 }
 
 renderHome();
