@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v11-cutout';
+const CACHE_NAME = 'miracle-v12-polish';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
