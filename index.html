@@ -19,10 +19,10 @@
   --text-mid:#999;
   --text-light:#ccc;
   --line:#f5f5f5;
-  --accent:#e8a0a0;
-  --accent2:#c4a0d8;
-  --accent3:#a0c4e8;
-  --gradient:linear-gradient(135deg,#fce4ec 0%,#f3e5f5 50%,#e3f2fd 100%);
+  --accent:#7ea8a2;
+  --accent2:#9eb5c4;
+  --accent3:#d4b896;
+  --gradient:linear-gradient(135deg,#e8ede5 0%,#e8e0d5 50%,#e0e8ec 100%);
   --glass:rgba(255,255,255,0.72);
   --glass-border:rgba(255,255,255,0.9);
   --shadow:0 1px 3px rgba(0,0,0,0.03);
@@ -53,7 +53,7 @@ input,textarea{font-family:inherit;}
 .app-header h1{
   font-family:var(--serif);font-size:1.6rem;font-weight:400;
   letter-spacing:6px;
-  background:linear-gradient(135deg,#e8a0a0,#c4a0d8,#a0c4e8);
+  background:linear-gradient(135deg,#7ea8a2,#9eb5c4,#d4b896);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text;
 }
@@ -147,7 +147,7 @@ input,textarea{font-family:inherit;}
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   color:#fff;padding:9px 28px;border-radius:22px;
   font-size:0.8rem;letter-spacing:2px;border:none;cursor:pointer;
-  box-shadow:0 2px 10px rgba(232,160,160,0.3);
+  box-shadow:0 2px 10px rgba(126,168,162,0.3);
   transition:all 0.25s;
 }
 .btn-add:active{transform:scale(0.96);}
@@ -183,7 +183,7 @@ input,textarea{font-family:inherit;}
 .polaroid img{width:100%;border-radius:2px;display:block;max-height:380px;object-fit:cover;}
 .polaroid .p-quote{font-family:var(--serif);font-size:0.88rem;line-height:1.7;color:var(--text);margin-top:12px;padding:0 4px;}
 .polaroid .p-card{
-  background:linear-gradient(135deg,#fff9f9,#f9f5ff);border-radius:10px;
+  background:linear-gradient(135deg,#f8faf8,#f5f8fa);border-radius:10px;
   padding:12px 14px;margin-top:10px;border:1px solid rgba(0,0,0,0.03);
 }
 .polaroid .p-card .lbl{font-size:0.62rem;color:var(--text-light);letter-spacing:2px;margin-bottom:6px;}
@@ -191,7 +191,7 @@ input,textarea{font-family:inherit;}
 .polaroid .p-date{font-family:var(--serif);font-size:0.68rem;color:var(--text-light);text-align:center;margin-top:12px;letter-spacing:3px;}
 .polaroid .p-actions{display:flex;gap:10px;margin-top:14px;justify-content:center;}
 .polaroid .p-actions button{font-size:0.74rem;padding:6px 16px;border-radius:16px;letter-spacing:1px;}
-.polaroid .btn-del{color:#d49a9a;background:#fdf6f6;}
+.polaroid .btn-del{color:#a08080;background:#f8f4f4;}
 .polaroid .btn-close{color:var(--text-mid);background:var(--line);}
 
 /* ===== 程序坞 ===== */
@@ -220,7 +220,7 @@ input,textarea{font-family:inherit;}
 .modal h2{font-family:var(--serif);font-size:1.1rem;font-weight:400;text-align:center;letter-spacing:3px;margin-bottom:18px;color:var(--text);}
 .modal label{display:block;font-size:0.72rem;color:var(--text-mid);margin:14px 0 6px;letter-spacing:1px;}
 .modal input[type="text"],.modal textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:0.84rem;color:var(--text);background:#fafafa;transition:all 0.2s;}
-.modal input[type="text"]:focus,.modal textarea:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(232,160,160,0.08);}
+.modal input[type="text"]:focus,.modal textarea:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(126,168,162,0.08);}
 .modal textarea{resize:vertical;}
 .modal textarea.quote-input{min-height:62px;font-family:var(--serif);line-height:1.7;}
 .modal textarea.thoughts-input{min-height:76px;font-family:var(--serif);line-height:28px;background-image:repeating-linear-gradient(transparent,transparent 27px,var(--line) 27px,var(--line) 28px);background-attachment:local;}
@@ -233,14 +233,14 @@ input,textarea{font-family:inherit;}
 .color-custom-wrap .plus{font-size:0.8rem;color:var(--text-light);}
 
 .img-upload{border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;}
-.img-upload:hover{border-color:var(--accent);background:rgba(232,160,160,0.02);}
+.img-upload:hover{border-color:var(--accent);background:rgba(126,168,162,0.02);}
 .img-upload .icon{font-size:1.4rem;}
 .img-upload p{font-size:0.7rem;color:var(--text-mid);margin-top:3px;}
 .img-preview{max-width:100%;max-height:160px;border-radius:10px;margin-top:8px;display:none;}
 .img-preview.show{display:block;}
 
 .modal-actions{display:flex;gap:10px;margin-top:22px;}
-.btn-save{flex:1;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:11px;border-radius:10px;font-size:0.84rem;letter-spacing:1px;border:none;box-shadow:0 2px 10px rgba(232,160,160,0.25);}
+.btn-save{flex:1;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:11px;border-radius:10px;font-size:0.84rem;letter-spacing:1px;border:none;box-shadow:0 2px 10px rgba(126,168,162,0.25);}
 .btn-cancel{flex:1;background:none;color:var(--text-mid);border:1px solid var(--line);padding:11px;border-radius:10px;font-size:0.84rem;}
 
 .empty{text-align:center;padding:80px 20px;color:var(--text-light);}
@@ -304,12 +304,12 @@ input,textarea{font-family:inherit;}
     <label>标签（逗号分隔）</label><input type="text" id="inputTags" placeholder="如：小说, 青春">
     <label>封面颜色</label>
     <div class="color-grid" id="colorGrid">
-      <div class="color-opt selected" style="background:#e8a0a0" data-c="#e8a0a0"></div>
-      <div class="color-opt" style="background:#c4a0d8" data-c="#c4a0d8"></div>
-      <div class="color-opt" style="background:#a0c4e8" data-c="#a0c4e8"></div>
-      <div class="color-opt" style="background:#a0d8b0" data-c="#a0d8b0"></div>
-      <div class="color-opt" style="background:#d8c4a0" data-c="#d8c4a0"></div>
-      <div class="color-opt" style="background:#d8a0c0" data-c="#d8a0c0"></div>
+      <div class="color-opt selected" style="background:#7ea8a2" data-c="#7ea8a2"></div>
+      <div class="color-opt" style="background:#9eb5c4" data-c="#9eb5c4"></div>
+      <div class="color-opt" style="background:#d4b896" data-c="#d4b896"></div>
+      <div class="color-opt" style="background:#c4d4a8" data-c="#c4d4a8"></div>
+      <div class="color-opt" style="background:#c0a8a0" data-c="#c0a8a0"></div>
+      <div class="color-opt" style="background:#e8c4c4" data-c="#e8c4c4"></div>
       <div class="color-opt" style="background:#7ea8a2" data-c="#7ea8a2"></div>
       <div class="color-opt" style="background:#d4b896" data-c="#d4b896"></div>
       <div class="color-opt" style="background:#1a1a1a" data-c="#1a1a1a"></div>
@@ -346,7 +346,7 @@ input,textarea{font-family:inherit;}
 <script>
 const KEY='miracle_data_v3';
 let data=JSON.parse(localStorage.getItem(KEY)||'{"books":[]}');
-let currentBookId=null,selColor='#e8a0a0',coverImg=null,noteImg=null;
+let currentBookId=null,selColor='#7ea8a2',coverImg=null,noteImg=null;
 
 function save(){localStorage.setItem(KEY,JSON.stringify(data));}
 function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML;}
@@ -376,7 +376,7 @@ function renderHome(){
   list.innerHTML=data.books.map(b=>{
     const tags=(b.tags||[]).slice(0,3);
     return `<div class="book-row" onclick="openBook('${b.id}')">
-      ${b.coverImg?`<img class="cover" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#e8a0a0'}">${esc(b.title)}</div>`}
+      ${b.coverImg?`<img class="cover" src="${b.coverImg}">`:`<div class="cover-ph" style="background:${b.color||'#7ea8a2'}">${esc(b.title)}</div>`}
       <div class="info">
         <div class="b-title">《${esc(b.title)}》</div>
         <div class="b-meta">${(b.notes||[]).length} 条笔记${b.author?' · '+esc(b.author):''}</div>
@@ -393,7 +393,7 @@ function renderStats(){
   const genres=getGenres();
   const sorted=Object.entries(genres).sort((a,b)=>b[1]-a[1]);
   const maxCount=Math.max(...sorted.map(x=>x[1]),1);
-  const palette=['#e8a0a0','#c4a0d8','#a0c4e8','#a0d8b0','#d8c4a0','#d8a0c0','#7ea8a2','#f0c060','#a8d8e0','#e0a8c8','#c0c0e0','#bbb'];
+  const palette=['#7ea8a2','#9eb5c4','#d4b896','#c4d4a8','#c0a8a0','#e8c4c4','#7ea8a2','#b0a0b8','#a8d8e0','#e0a8c8','#c0c0e0','#bbb'];
 
   // 饼图
   const pieData=sorted.map(([g,c],i)=>({name:g,value:c,color:palette[i%palette.length]}));
@@ -409,7 +409,7 @@ function renderStats(){
   }).join(''):'';
 
   // 柱状图
-  const bookStats=data.books.map(b=>({title:b.title,count:(b.notes||[]).length,color:b.color||'#e8a0a0'})).sort((a,b)=>b.count-a.count).slice(0,8);
+  const bookStats=data.books.map(b=>({title:b.title,count:(b.notes||[]).length,color:b.color||'#7ea8a2'})).sort((a,b)=>b.count-a.count).slice(0,8);
   const maxBar=Math.max(...bookStats.map(b=>b.count),1);
 
   // 月度趋势
@@ -445,7 +445,7 @@ function renderStats(){
     </div>`:''}
     <div class="chart-card">
       <h3>📅 近 6 个月趋势</h3>
-      <div class="trend-bars">${months.map((m,i)=>`<div class="trend-col"><div class="tbar ${mc[i]>0?'active':''}" style="height:${mc[i]/maxM*75}px;background:linear-gradient(180deg,#e8a0a0,#c4a0d8);"></div><div class="tmon">${m.label}</div></div>`).join('')}</div>
+      <div class="trend-bars">${months.map((m,i)=>`<div class="trend-col"><div class="tbar ${mc[i]>0?'active':''}" style="height:${mc[i]/maxM*75}px;background:linear-gradient(180deg,#7ea8a2,#9eb5c4);"></div><div class="tmon">${m.label}</div></div>`).join('')}</div>
     </div>
     ${totalBooks===0?'<div class="empty" style="padding:40px;"><div class="icon">📊</div><p>还没有数据</p></div>':''}
   `;
