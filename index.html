@@ -1439,6 +1439,7 @@ function savePost(){
     data.posts.unshift({id:'p_'+Date.now(),text,images:[...postImgs],video:postVideo||null,likes:[],comments:[],date:new Date().toISOString()});
   }
   save();closeModal('postModal');renderDaily();
+  showToast(editId?'✅ 动态已更新':'✅ 发布成功！');
 }
 function fmtRelative(d){
   const now=Date.now();const diff=now-new Date(d).getTime();
