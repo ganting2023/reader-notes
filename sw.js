@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v15-zero-config';
+const CACHE_NAME = 'miracle-v16-no-editor';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
