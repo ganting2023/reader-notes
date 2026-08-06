@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v32-media-zine-polish';
+const CACHE_NAME = 'miracle-v33-polaroid-fix';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
