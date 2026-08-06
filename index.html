@@ -2178,7 +2178,11 @@ function savePost(){
     if(!data.posts)data.posts=[];
     data.posts.unshift({id:'p_'+Date.now(),text,images:[...postImgs],video:postVideo||null,likes:[],comments:[],date:new Date().toISOString()});
   }
-  save();closeModal('postModal');renderDaily();
+  save();
+  postImgs=[];postVideo=null;
+  closeModal('postModal');
+  switchDailySubtab('feed');
+  renderDaily();
   showToast(editId?'✅ 动态已更新':'✅ 发布成功！');
 }
 function fmtRelative(d){

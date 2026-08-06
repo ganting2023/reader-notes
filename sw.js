@@ -1,4 +1,4 @@
-const CACHE_NAME = 'miracle-v33-polaroid-fix';
+const CACHE_NAME = 'miracle-v34-post-fix';
 const ASSETS = [
   '/reader-notes/',
   '/reader-notes/index.html',
